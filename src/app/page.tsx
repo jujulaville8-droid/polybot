@@ -10,15 +10,17 @@ import ParticleNetwork from "./particles";
 
 /* ─── Terminal animation lines ─── */
 const TERMINAL_LINES = [
-  { text: "$ cruise-alpha start --strategy market-maker", type: "input" as const },
-  { text: "Connecting to Polymarket API...", type: "output" as const },
-  { text: "✓ Authenticated. Scanning 847 active markets.", type: "success" as const },
-  { text: "Found 12 mispriced markets (spread > 3.2%)", type: "output" as const },
-  { text: "Placing limit order: YES @ $0.42 on 'Fed Rate Cut July'", type: "trade" as const },
-  { text: "✓ Filled 500 shares @ $0.42, edge: +4.1%", type: "success" as const },
-  { text: "Placing limit order: NO @ $0.71 on 'ETH > $5k Dec'", type: "trade" as const },
-  { text: "✓ Filled 300 shares @ $0.71, edge: +2.8%", type: "success" as const },
-  { text: "Overnight P&L: +$1,247.83 | Win rate: 68.4% | You slept 8 hours", type: "profit" as const },
+  { text: "$ cruise-alpha init --project my-first-bot", type: "input" as const },
+  { text: "Scaffolding your bot project...", type: "output" as const },
+  { text: "✓ Project created. Opening tutorial...", type: "success" as const },
+  { text: "Lesson 1: Connecting to the Polymarket API", type: "output" as const },
+  { text: "✓ API connection established. 847 markets loaded.", type: "success" as const },
+  { text: "Lesson 2: Building your market scanner", type: "output" as const },
+  { text: "✓ Scanner found 12 mispriced markets (spread > 3.2%)", type: "success" as const },
+  { text: "Lesson 3: Writing your first trading strategy", type: "trade" as const },
+  { text: "✓ Backtest complete: 68.4% win rate over 18 months", type: "success" as const },
+  { text: "$ cruise-alpha deploy", type: "input" as const },
+  { text: "✓ Your bot is live. You built this.", type: "profit" as const },
 ];
 
 /* ─── Ticker markets (the signature visual) ─── */
@@ -38,32 +40,32 @@ const TICKER_MARKETS = [
 /* ─── FAQ data ─── */
 const FAQ_ITEMS = [
   {
+    q: "Do I need coding experience?",
+    a: "Some basics help, but it's not required. The curriculum starts from scratch and walks you through Python fundamentals, API integration, and bot architecture step by step. Most students with zero coding background have a working bot by week 3.",
+  },
+  {
     q: "Is trading on Polymarket legal?",
-    a: "Polymarket operates as a CFTC-regulated prediction market. Legality depends on your jurisdiction. We provide the trading tools and you are responsible for ensuring compliance with your local laws.",
+    a: "Polymarket operates as a CFTC-regulated prediction market. Legality depends on your jurisdiction. We teach you how to build trading bots and you are responsible for ensuring compliance with your local laws.",
   },
   {
     q: "What are the risks?",
-    a: "All trading carries risk of financial loss. Our bots use systematic strategies with built-in risk management (position limits, max drawdown stops, diversification), but no system eliminates risk entirely. Never trade with money you can't afford to lose.",
+    a: "All trading carries risk of financial loss. The course teaches systematic strategies with built-in risk management (position limits, max drawdown stops, diversification), but no system eliminates risk entirely. Never trade with money you can't afford to lose.",
   },
   {
-    q: "Do you access my funds?",
-    a: "Never. Your bot runs on your own infrastructure with your own API keys. We never have access to your wallet, your keys, or your funds. The bot uses read-only permissions where possible.",
+    q: "What do I get access to?",
+    a: "Lifetime access to the full curriculum, video lessons, code templates, a private community of other students, and ongoing updates as Polymarket's API evolves. You also get a 1-on-1 intro call to map out your learning path.",
   },
   {
-    q: "Do I need coding experience?",
-    a: "No. The bot ships as a Docker container with a one-command startup. Configuration is done through a simple .env file. We provide step-by-step guides and a strategy call to configure everything.",
+    q: "How is this different from buying a bot?",
+    a: "When you buy a bot, you get a black box. When it breaks, you're stuck. Here, you build the bot yourself and understand every line. You can customize it, fix it, and evolve it. No vendor dependency, ever.",
   },
   {
-    q: "How do strategy updates work?",
-    a: "Depending on your tier, you receive 3-12 months of strategy updates. Updated Docker images are delivered automatically. After your update period, the bot continues working. You just won't receive new strategies.",
+    q: "How long does it take?",
+    a: "Most students deploy their first bot within 3 weeks, spending a few hours per week. The full curriculum covers advanced strategies over 6-8 weeks, but you can go at your own pace.",
   },
   {
-    q: "Which markets does the bot trade?",
-    a: "Any Polymarket market. Political predictions, crypto prices, sports, world events. During your strategy call, we configure which categories and risk parameters fit your goals.",
-  },
-  {
-    q: "What's your track record?",
-    a: "We publish backtested results transparently, including drawdown periods. Our market-making strategy has been backtested across 18 months with a 68% win rate and Sharpe ratio of 1.9. Live results are shared with Pro and VIP members.",
+    q: "Which markets can my bot trade?",
+    a: "Any Polymarket market. Political predictions, crypto prices, sports, world events. You'll learn to configure which categories and risk parameters fit your goals.",
   },
   {
     q: "Is there a money-back guarantee?",
@@ -224,7 +226,7 @@ function AnimatedTerminal() {
           <div className={`w-3 h-3 rounded-full transition-colors duration-500 delay-100 ${booted ? "bg-[oklch(75%_0.18_85)]" : "bg-surface-3"}`} />
           <div className={`w-3 h-3 rounded-full transition-colors duration-500 delay-200 ${booted ? "bg-[oklch(72%_0.19_155)]" : "bg-surface-3"}`} />
           <span className={`ml-3 text-xs font-mono transition-opacity duration-500 delay-300 ${booted ? "text-text-tertiary" : "text-transparent"}`}>
-            cruise-alpha — strategy: market-maker
+            cruise-alpha — learn: module-1
           </span>
         </div>
 
@@ -232,7 +234,7 @@ function AnimatedTerminal() {
         <div className="p-4 sm:p-6 font-mono text-xs sm:text-sm leading-6 sm:leading-7 min-h-[240px] sm:min-h-[420px] relative">
           {!booted && inView && (
             <div className="text-text-tertiary animate-pulse">
-              Initializing Cruise Alpha v2.4.1...
+              Loading Cruise Alpha Curriculum v2.4...
             </div>
           )}
           {TERMINAL_LINES.slice(0, visibleLines).map((line, i) => (
@@ -330,7 +332,7 @@ function CalendlyStep() {
     <div className="animate-fade-up">
       <h3 className="text-2xl font-semibold mb-2">Pick a time that works</h3>
       <p className="text-text-secondary mb-8">
-        15 minutes. We&apos;ll review your goals and map out a strategy.
+        15 minutes. We&apos;ll review your background and map out the right learning path for you.
       </p>
 
       <div
@@ -395,13 +397,13 @@ function ExitIntent() {
           ✕
         </button>
         <p className="text-lg font-semibold text-accent mb-2">
-          Not ready for a call?
+          Not ready to enroll?
         </p>
         <h3 className="text-2xl font-bold mb-3 font-display">
-          5 Polymarket Strategies Most Traders Miss
+          Free Guide: Build Your First Polymarket Bot
         </h3>
         <p className="text-text-secondary mb-6 text-sm">
-          Free guide. No spam. Unsubscribe anytime.
+          A starter tutorial to get your feet wet. No spam. Unsubscribe anytime.
         </p>
         <form className="flex gap-3" onSubmit={(e) => e.preventDefault()}>
           <input
@@ -462,10 +464,10 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 
 /* ─── Stat panel with counter animation ─── */
 const STATS = [
-  { value: "68.4%", label: "Win rate" },
-  { value: "1.9", label: "Sharpe ratio" },
-  { value: "-8.2%", label: "Max drawdown" },
-  { value: "+47.3%", label: "Total return" },
+  { value: "68.4%", label: "Avg win rate" },
+  { value: "200+", label: "Students enrolled" },
+  { value: "3 wks", label: "To first deploy" },
+  { value: "92%", label: "Completion rate" },
 ];
 
 function StatPanel() {
@@ -495,7 +497,7 @@ function StatPanel() {
   return (
     <div ref={ref} className="rounded-2xl border border-border bg-surface-1 p-8">
       <p className="text-xs font-medium text-text-tertiary uppercase tracking-widest mb-6">
-        Backtested performance · 18 months
+        Student outcomes · course stats
       </p>
       <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
         {STATS.map((stat, i) => (
@@ -510,8 +512,8 @@ function StatPanel() {
         ))}
       </div>
       <p className="text-xs text-text-tertiary mt-6 border-t border-border pt-4">
-        Past performance does not guarantee future results.
-        Backtested using historical Polymarket data Jan 2024 – Jun 2025.
+        Win rate based on student-built bot backtests.
+        Individual results vary based on strategy and market conditions.
       </p>
     </div>
   );
@@ -630,7 +632,7 @@ function FloatingPill({ onClick }: { onClick: () => void }) {
       }`}
       style={{ transitionTimingFunction: "var(--ease-out-quart)" }}
     >
-      Book a call →
+      Start learning →
     </button>
   );
 }
@@ -688,7 +690,7 @@ export default function Home() {
             onClick={toggleBooking}
             className="rounded-lg bg-profit px-5 py-2 text-sm font-semibold text-[oklch(12%_0.01_155)] hover:bg-profit-hover transition-colors duration-200"
           >
-            Book a Call
+            Start Learning
           </button>
         </div>
       </header>
@@ -715,7 +717,7 @@ export default function Home() {
                 onClick={toggleBooking}
                 className="rounded-lg bg-profit px-5 py-2.5 text-sm font-semibold text-[oklch(12%_0.01_155)] hover:bg-profit-hover transition-colors duration-200"
               >
-                Book a Free Call
+                Start Learning
               </button>
             </div>
 
@@ -724,19 +726,19 @@ export default function Home() {
               <div>
                 <div className="hero-badge inline-flex items-center gap-2 rounded-full border border-border bg-surface-1 px-4 py-1.5 text-xs font-medium text-text-secondary mb-8">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-profit animate-pulse" />
-                  Processing $2.4M+ in predictions
+                  200+ students building bots
                 </div>
 
                 <h1 className="hero-headline text-[clamp(2.5rem,5vw+1rem,4.5rem)] font-display font-bold leading-[1.05] tracking-tight mb-6">
-                  Wake up to
+                  Build the bot.
                   <br />
-                  <span className="text-profit">profit</span> every morning
+                  <span className="text-profit">Keep</span> the edge.
                 </h1>
 
                 <p className="hero-sub text-lg sm:text-xl text-text-secondary leading-relaxed max-w-lg mb-10">
-                  Your bot trades Polymarket 24/7. Scanning 800+ markets,
-                  finding mispricings, and executing while you sleep.
-                  Yesterday it made $1,247 before your alarm went off.
+                  Learn to build your own Polymarket trading bot from scratch.
+                  No black boxes, no vendor lock-in. You write the code,
+                  you understand the strategy, you own the whole thing.
                 </p>
 
                 <div className="hero-cta">
@@ -744,7 +746,7 @@ export default function Home() {
                     onClick={toggleBooking}
                     className="rounded-xl bg-profit px-6 py-3.5 text-sm font-semibold text-[oklch(12%_0.01_155)] hover:bg-profit-hover transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-profit"
                   >
-                    Book My Free Strategy Call
+                    Book a Free Intro Call
                   </button>
                   <p className="text-xs text-text-tertiary mt-3">
                     Free, no obligation · 15 min
@@ -769,10 +771,10 @@ export default function Home() {
         <Section className="px-6 py-16 sm:py-20">
           <div className="mx-auto max-w-5xl">
             <p className="text-sm font-medium text-accent uppercase tracking-widest mb-4 text-center">
-              See it in action
+              See what you&apos;ll build
             </p>
             <h2 className="text-[clamp(1.75rem,3vw+0.5rem,3rem)] font-display font-bold tracking-tight mb-10 text-center max-w-2xl mx-auto">
-              24 hours of automated trading
+              A student&apos;s bot after week 3
             </h2>
             <div className="rounded-2xl border border-border bg-surface-1 overflow-hidden shadow-2xl">
               <video
@@ -785,7 +787,7 @@ export default function Home() {
               />
             </div>
             <p className="text-xs text-text-tertiary mt-4 text-center">
-              Real dashboard. Real strategy execution. Zero manual input.
+              Real dashboard. Real strategy. Built from scratch by a student.
             </p>
           </div>
         </Section>
@@ -797,32 +799,32 @@ export default function Home() {
               The problem
             </p>
             <h2 className="text-[clamp(1.75rem,3vw+0.5rem,3rem)] font-display font-bold tracking-tight mb-6 max-w-2xl">
-              Manual trading is bleeding you dry
+              Buying someone else&apos;s bot is a trap
             </h2>
             <p className="text-text-secondary text-lg mb-16 max-w-2xl">
-              Every hour you spend watching charts, you&apos;re competing against
-              algorithms that never sleep, never hesitate, and never let
-              emotion cloud a trade.
+              You hand over money for a black box you don&apos;t understand,
+              can&apos;t customize, and can&apos;t fix when it breaks. The real
+              edge is knowing how to build one yourself.
             </p>
 
             <div className="grid gap-6 sm:grid-cols-3">
               {[
                 {
-                  stat: "24/7",
-                  title: "Markets never close",
-                  desc: "You sleep, you miss moves. Algorithms don\u2019t have a bedtime.",
+                  stat: "???",
+                  title: "Black box strategies",
+                  desc: "You don\u2019t know what it\u2019s doing or why. When it loses money, you\u2019re helpless.",
                   color: "text-accent",
                 },
                 {
-                  stat: "< 90s",
-                  title: "Mispricings vanish fast",
-                  desc: "By the time you spot it and place a trade \u2014 the opportunity is gone.",
+                  stat: "$0",
+                  title: "No customization",
+                  desc: "One-size-fits-all bots can\u2019t adapt to your risk tolerance, goals, or market thesis.",
                   color: "text-text-primary",
                 },
                 {
-                  stat: "\u221223%",
-                  title: "Emotion kills returns",
-                  desc: "Emotional traders underperform systematic ones by 15\u201330%.",
+                  stat: "\u221E",
+                  title: "Vendor lock-in",
+                  desc: "When the vendor disappears or raises prices, your entire strategy goes with them.",
                   color: "text-[oklch(65%_0.2_25)]",
                 },
               ].map((item, i) => (
@@ -850,7 +852,7 @@ export default function Home() {
               How it works
             </p>
             <h2 className="text-[clamp(1.75rem,3vw+0.5rem,3rem)] font-display font-bold tracking-tight mb-10 max-w-2xl">
-              Three steps to systematic edge
+              Three steps to your own trading bot
             </h2>
 
             {/* Horizontal steps with connecting line */}
@@ -861,18 +863,18 @@ export default function Home() {
               {[
                 {
                   step: "01",
-                  title: "Book a strategy call",
-                  desc: "15 minutes. We learn your goals, risk tolerance, and market interests. No pitch, just strategy.",
+                  title: "Book an intro call",
+                  desc: "15 minutes. We learn your background, goals, and experience level. We map out which track fits you best.",
                 },
                 {
                   step: "02",
-                  title: "Get your custom config",
-                  desc: "We tune the bot to your parameters: markets, position sizing, risk limits, and execution speed.",
+                  title: "Follow the curriculum",
+                  desc: "Structured lessons take you from API basics to live strategies. Build, backtest, and iterate with guidance.",
                 },
                 {
                   step: "03",
-                  title: "Deploy on autopilot",
-                  desc: "One Docker command. Your bot runs on your infrastructure, with your keys, scanning markets 24/7.",
+                  title: "Deploy your own bot",
+                  desc: "Ship what you built to your own infrastructure. Your code, your keys, your strategy. No dependencies on us.",
                 },
               ].map((item, i) => (
                 <div key={i} className="step-item relative">
@@ -892,7 +894,7 @@ export default function Home() {
                 onClick={toggleBooking}
                 className="rounded-xl bg-profit px-6 py-3.5 text-sm font-semibold text-[oklch(12%_0.01_155)] hover:bg-profit-hover transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-profit"
               >
-                Book My Free Strategy Call
+                Book a Free Intro Call
               </button>
             </div>
           </div>
@@ -902,10 +904,10 @@ export default function Home() {
         <Section id="features" className="px-6 py-16 sm:py-20" animateFn={animateBento}>
           <div className="mx-auto max-w-6xl">
             <p className="text-sm font-medium text-accent uppercase tracking-widest mb-4">
-              Capabilities
+              What you&apos;ll build
             </p>
             <h2 className="text-[clamp(1.75rem,3vw+0.5rem,3rem)] font-display font-bold tracking-tight mb-10 max-w-2xl">
-              Built for serious traders
+              Every module, a working piece of your bot
             </h2>
 
             {/* Bento grid — varied sizes, NO identical cards */}
@@ -913,11 +915,11 @@ export default function Home() {
               {/* Large hero feature — spans 2 cols */}
               <div className="bento-tile lg:col-span-2 rounded-2xl border border-border bg-surface-1 p-10 flex flex-col justify-between min-h-[200px]">
                 <div>
-                  <h3 className="text-2xl font-semibold mb-3">Market Making</h3>
+                  <h3 className="text-2xl font-semibold mb-3">Market Making Strategy</h3>
                   <p className="text-text-secondary leading-relaxed max-w-lg">
-                    Provide liquidity on both sides of a market. Capture the
-                    spread while maintaining delta-neutral positions. The bot
-                    continuously adjusts quotes based on real-time order book depth.
+                    Learn to provide liquidity on both sides of a market. You&apos;ll
+                    build a bot that captures spreads, maintains delta-neutral positions,
+                    and adjusts quotes based on real-time order book depth.
                   </p>
                 </div>
                 <div className="flex gap-3 mt-6">
@@ -938,7 +940,7 @@ export default function Home() {
                   Risk Management
                 </h3>
                 <p className="text-text-secondary text-sm leading-relaxed mb-6">
-                  The bot protects your capital first. Always.
+                  You&apos;ll implement every layer of capital protection yourself.
                 </p>
                 <ul className="space-y-3 text-sm">
                   {[
@@ -961,16 +963,16 @@ export default function Home() {
               <div className="bento-tile rounded-2xl border border-border p-8 hover-lift">
                 <h3 className="text-lg font-semibold mb-3">Arbitrage Detection</h3>
                 <p className="text-text-secondary text-sm leading-relaxed">
-                  Cross-market scanning finds price discrepancies between
-                  correlated events. Execute before the spread closes.
+                  Build a cross-market scanner that finds price discrepancies
+                  between correlated events and executes before the spread closes.
                 </p>
               </div>
 
               <div className="bento-tile rounded-2xl border border-border p-8 hover-lift">
                 <h3 className="text-lg font-semibold mb-3">Backtesting Engine</h3>
                 <p className="text-text-secondary text-sm leading-relaxed">
-                  Test strategies against 18+ months of historical data. Understand
-                  expected returns before risking real capital.
+                  Build your own backtester using 18+ months of historical data. Validate
+                  strategies before risking real capital.
                 </p>
               </div>
 
@@ -979,8 +981,8 @@ export default function Home() {
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Real-Time Alerts</h3>
                   <p className="text-text-secondary text-sm leading-relaxed max-w-md">
-                    Telegram and Discord notifications for every trade,
-                    significant market moves, and system health.
+                    Wire up Telegram, Discord, and webhook notifications for trades,
+                    market moves, and system health. You&apos;ll build the whole pipeline.
                   </p>
                 </div>
                 <div className="flex gap-2 flex-shrink-0">
@@ -999,8 +1001,8 @@ export default function Home() {
               <div className="bento-tile rounded-2xl border border-border p-8 hover-lift">
                 <h3 className="text-lg font-semibold mb-3">Docker Deployment</h3>
                 <p className="text-text-secondary text-sm leading-relaxed">
-                  One-command setup. No dependency hell. Works on any VPS,
-                  home server, or cloud provider.
+                  Learn to containerize and deploy your bot. Works on any VPS,
+                  home server, or cloud provider. You own the infra.
                 </p>
               </div>
             </div>
@@ -1011,7 +1013,7 @@ export default function Home() {
         <Section className="px-6 py-12 sm:py-16" animateFn={animatePullQuote}>
           <div className="mx-auto max-w-4xl text-center">
             <p className="pull-quote text-[clamp(1.5rem,3vw+0.5rem,2.5rem)] font-display font-semibold leading-snug">
-              &ldquo;The edge wasn&apos;t in the strategy. It was in removing the human.&rdquo;
+              &ldquo;The edge wasn&apos;t in buying a bot. It was in understanding how to build one.&rdquo;
             </p>
           </div>
         </Section>
@@ -1023,7 +1025,7 @@ export default function Home() {
               {/* Left — Story */}
               <div>
                 <p className="text-sm font-medium text-accent uppercase tracking-widest mb-4">
-                  Why I built this
+                  Why I teach this
                 </p>
                 <h2 className="text-[clamp(1.75rem,3vw+0.5rem,3rem)] font-display font-bold tracking-tight mb-8">
                   I was the worst manual trader
@@ -1039,8 +1041,12 @@ export default function Home() {
                     bot to execute my strategy without emotion. Within three months, the
                     same strategies that lost money manually were producing consistent returns.
                   </p>
+                  <p>
+                    Then I realized: the most valuable thing wasn&apos;t the bot itself.
+                    It was everything I learned building it. Now I teach others to do the same.
+                  </p>
                   <p className="text-text-primary font-medium text-lg">
-                    The edge wasn&apos;t in the strategy. It was in removing the human.
+                    The edge isn&apos;t in buying a bot. It&apos;s in knowing how to build one.
                   </p>
                 </div>
               </div>
@@ -1049,16 +1055,16 @@ export default function Home() {
               <div className="space-y-6">
                 <StatPanel />
 
-                {/* Security — not cards, just clean rows */}
+                {/* Philosophy — not cards, just clean rows */}
                 <div className="space-y-4">
                   {[
                     {
-                      title: "Your keys never leave your wallet",
-                      desc: "Self-hosted. No custody. No withdrawal permissions.",
+                      title: "You own everything you build",
+                      desc: "Your code, your infrastructure, your keys. No vendor dependency.",
                     },
                     {
-                      title: "Read-only API access",
-                      desc: "The bot reads market data and places trades. It cannot move your funds.",
+                      title: "Lifetime access to the curriculum",
+                      desc: "All lessons, updates, and community access. Learn at your own pace.",
                     },
                   ].map((item, i) => (
                     <div key={i} className="flex items-start gap-4 py-3">
@@ -1075,7 +1081,7 @@ export default function Home() {
                   onClick={toggleBooking}
                   className="rounded-xl bg-profit px-8 py-4 text-base font-semibold text-[oklch(12%_0.01_155)] hover:bg-profit-hover transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-profit"
                 >
-                  Book My Free Strategy Call
+                  Book a Free Intro Call
                 </button>
               </div>
             </div>
@@ -1086,34 +1092,34 @@ export default function Home() {
         <Section className="px-6 py-16 sm:py-20" animateFn={animateSection}>
           <div className="mx-auto max-w-6xl">
             <p className="text-sm font-medium text-accent uppercase tracking-widest mb-4">
-              What traders are saying
+              Student stories
             </p>
             <h2 className="text-[clamp(1.75rem,3vw+0.5rem,3rem)] font-display font-bold tracking-tight mb-10 max-w-2xl">
-              Don&apos;t take our word for it
+              They built it themselves
             </h2>
 
             <div className="grid gap-6 lg:grid-cols-3">
               {[
                 {
-                  quote: "I was mass-monitoring Polymarket charts for 6 hours a day. Now the bot catches moves I would've slept through. Last month it caught a 12% mispricing at 3am that netted me $2,400.",
+                  quote: "I had zero coding experience. By week 3 my bot was live on Polymarket and caught a 12% mispricing at 3am. The feeling of building something that makes money while you sleep is unreal.",
                   name: "Marcus T.",
-                  role: "Full-time prediction market trader",
-                  metric: "+$2,400",
-                  metricLabel: "single overnight trade",
+                  role: "Former manual trader, now bot builder",
+                  metric: "3 wks",
+                  metricLabel: "to first live bot",
                 },
                 {
-                  quote: "The strategy call alone was worth it. They identified three markets I was overexposed in and set risk limits that would've saved me $8K last quarter. The bot is a bonus on top of that.",
+                  quote: "I'd bought two different trading bots before this. Both broke within months and the vendors ghosted. Now I understand every line of code in my system. When something breaks, I fix it myself in minutes.",
                   name: "Sarah K.",
                   role: "Crypto trader, 4 years experience",
-                  metric: "−68%",
-                  metricLabel: "drawdown reduction",
+                  metric: "100%",
+                  metricLabel: "code ownership",
                 },
                 {
-                  quote: "I run three bots across different strategies now. Market making has been the most consistent. Steady returns without me touching anything. Docker setup took 10 minutes.",
+                  quote: "I'm a software engineer but knew nothing about trading systems. The curriculum clicked immediately. I run three strategies now and I'm already building a fourth one on my own.",
                   name: "James R.",
-                  role: "Software engineer & part-time trader",
-                  metric: "10 min",
-                  metricLabel: "setup to first trade",
+                  role: "Software engineer, cohort 2",
+                  metric: "4",
+                  metricLabel: "custom strategies built",
                 },
               ].map((t, i) => (
                 <div
@@ -1150,7 +1156,7 @@ export default function Home() {
                 onClick={toggleBooking}
                 className="rounded-xl bg-profit px-8 py-4 text-base font-semibold text-[oklch(12%_0.01_155)] hover:bg-profit-hover transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-profit"
               >
-                Book My Free Strategy Call
+                Book a Free Intro Call
               </button>
             </div>
           </div>
@@ -1181,31 +1187,31 @@ export default function Home() {
             <div className="final-heading">
               <div className="inline-flex items-center gap-2 rounded-full border border-profit/30 bg-profit/5 px-4 py-1.5 text-xs font-medium text-profit mb-6">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-profit animate-pulse" />
-                Only 8 strategy call slots left this week
+                Next cohort starts soon
               </div>
               <h2 className="text-[clamp(2rem,4vw+0.5rem,3.5rem)] font-display font-bold tracking-tight mb-4">
-                Stop leaving alpha on the table
+                Stop renting edge. Start building it.
               </h2>
             </div>
             <p className="final-body text-lg text-text-secondary mb-8 max-w-xl mx-auto">
-              Every day without systematic execution is another day of
-              leaked edge. Let&apos;s talk about your strategy.
+              Every day without your own system is another day depending on
+              someone else&apos;s. Let&apos;s talk about where to start.
             </p>
             <button
               onClick={toggleBooking}
               className="final-button rounded-xl bg-profit px-8 py-4 text-base font-semibold text-[oklch(12%_0.01_155)] hover:bg-profit-hover transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-profit"
             >
-              Book My Free Strategy Call
+              Book a Free Intro Call
             </button>
             <p className="text-xs text-text-tertiary mt-3">
               Free, no obligation · 15 minutes · No credit card required
             </p>
             <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mt-8">
               {[
-                "Self-hosted",
+                "You own the code",
                 "30-day money-back",
-                "Strategy call included",
-                "No lock-in",
+                "Lifetime access",
+                "No vendor lock-in",
               ].map((point, i) => (
                 <span key={i} className="final-signal flex items-center gap-2 text-text-tertiary text-xs">
                   <span className="w-1 h-1 rounded-full bg-profit flex-shrink-0" />
@@ -1244,7 +1250,7 @@ export default function Home() {
               </div>
             </div>
             <p className="text-xs text-text-tertiary leading-relaxed max-w-3xl">
-              This software is provided as a tool for automated trading on
+              This course teaches you to build automated trading tools for
               Polymarket. Past performance, whether backtested or live, does not
               guarantee future results. Trading on prediction markets involves
               significant risk of loss. You should not trade with money you

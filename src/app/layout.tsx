@@ -21,13 +21,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Cruise Alpha — Algorithmic Trading for Polymarket",
+  title: "Cruise Alpha — Learn to Build Polymarket Trading Bots",
   description:
-    "Automated prediction market trading bots. Systematic edge, zero emotion. Book a free strategy call.",
+    "Step-by-step course to build your own automated prediction market trading bot. From zero to deployed in weeks.",
   openGraph: {
-    title: "Cruise Alpha — Algorithmic Trading for Polymarket",
+    title: "Cruise Alpha — Learn to Build Polymarket Trading Bots",
     description:
-      "Automated prediction market trading bots. Systematic edge, zero emotion.",
+      "Step-by-step course to build your own automated prediction market trading bot. From zero to deployed in weeks.",
     type: "website",
   },
 };
