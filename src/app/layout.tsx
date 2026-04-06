@@ -21,11 +21,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "EdgeBot — Algorithmic Trading for Polymarket",
+  title: "Cruise Alpha — Algorithmic Trading for Polymarket",
   description:
     "Automated prediction market trading bots. Systematic edge, zero emotion. Book a free strategy call.",
   openGraph: {
-    title: "EdgeBot — Algorithmic Trading for Polymarket",
+    title: "Cruise Alpha — Algorithmic Trading for Polymarket",
     description:
       "Automated prediction market trading bots. Systematic edge, zero emotion.",
     type: "website",

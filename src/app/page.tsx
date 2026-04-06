@@ -10,7 +10,7 @@ import ParticleNetwork from "./particles";
 
 /* ─── Terminal animation lines ─── */
 const TERMINAL_LINES = [
-  { text: "$ edgebot start --strategy market-maker", type: "input" as const },
+  { text: "$ cruise-alpha start --strategy market-maker", type: "input" as const },
   { text: "Connecting to Polymarket API...", type: "output" as const },
   { text: "✓ Authenticated. Scanning 847 active markets.", type: "success" as const },
   { text: "Found 12 mispriced markets (spread > 3.2%)", type: "output" as const },
@@ -224,7 +224,7 @@ function AnimatedTerminal() {
           <div className={`w-3 h-3 rounded-full transition-colors duration-500 delay-100 ${booted ? "bg-[oklch(75%_0.18_85)]" : "bg-surface-3"}`} />
           <div className={`w-3 h-3 rounded-full transition-colors duration-500 delay-200 ${booted ? "bg-[oklch(72%_0.19_155)]" : "bg-surface-3"}`} />
           <span className={`ml-3 text-xs font-mono transition-opacity duration-500 delay-300 ${booted ? "text-text-tertiary" : "text-transparent"}`}>
-            edgebot — strategy: market-maker
+            cruise-alpha — strategy: market-maker
           </span>
         </div>
 
@@ -232,7 +232,7 @@ function AnimatedTerminal() {
         <div className="p-4 sm:p-6 font-mono text-xs sm:text-sm leading-6 sm:leading-7 min-h-[240px] sm:min-h-[420px] relative">
           {!booted && inView && (
             <div className="text-text-tertiary animate-pulse">
-              Initializing EdgeBot v2.4.1...
+              Initializing Cruise Alpha v2.4.1...
             </div>
           )}
           {TERMINAL_LINES.slice(0, visibleLines).map((line, i) => (
@@ -682,7 +682,7 @@ export default function Home() {
       >
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
           <span className="text-base font-bold tracking-tight">
-            edge<span className="text-accent">bot</span>
+            Cruise<span className="text-accent"> Alpha</span>
           </span>
           <button
             onClick={toggleBooking}
@@ -709,7 +709,7 @@ export default function Home() {
             {/* Top bar */}
             <div className="hero-topbar flex items-center justify-between mb-10 sm:mb-14">
               <span className="text-xl font-bold tracking-tight">
-                edge<span className="text-accent">bot</span>
+                Cruise<span className="text-accent"> Alpha</span>
               </span>
               <button
                 onClick={toggleBooking}
@@ -764,6 +764,31 @@ export default function Home() {
         <div className="mt-16 sm:mt-24 relative z-10">
           <MarketTicker />
         </div>
+
+        {/* ══════════════ DEMO VIDEO ══════════════ */}
+        <Section className="px-6 py-16 sm:py-20">
+          <div className="mx-auto max-w-5xl">
+            <p className="text-sm font-medium text-accent uppercase tracking-widest mb-4 text-center">
+              See it in action
+            </p>
+            <h2 className="text-[clamp(1.75rem,3vw+0.5rem,3rem)] font-display font-bold tracking-tight mb-10 text-center max-w-2xl mx-auto">
+              24 hours of automated trading
+            </h2>
+            <div className="rounded-2xl border border-border bg-surface-1 overflow-hidden shadow-2xl">
+              <video
+                src="/demo-timelapse.mp4"
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="w-full h-auto"
+              />
+            </div>
+            <p className="text-xs text-text-tertiary mt-4 text-center">
+              Real dashboard. Real strategy execution. Zero manual input.
+            </p>
+          </div>
+        </Section>
 
         {/* ══════════════ PROBLEM (PAS) ══════════════ */}
         <Section id="problem" className="px-6 pt-16 pb-16 sm:pt-20 sm:pb-20" animateFn={animateProblemCards}>
@@ -1201,7 +1226,7 @@ export default function Home() {
           <div className="mx-auto max-w-6xl">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-8">
               <span className="text-base font-bold tracking-tight">
-                edge<span className="text-accent">bot</span>
+                Cruise<span className="text-accent"> Alpha</span>
               </span>
               <div className="flex gap-6 text-sm text-text-tertiary">
                 <a href="#" className="hover:text-text-secondary transition-colors">
@@ -1226,7 +1251,7 @@ export default function Home() {
               cannot afford to lose. This is not financial advice.
             </p>
             <p className="text-xs text-text-tertiary mt-4">
-              © {new Date().getFullYear()} EdgeBot. All rights reserved.
+              © {new Date().getFullYear()} Cruise Alpha. All rights reserved.
             </p>
           </div>
         </footer>
