@@ -15,9 +15,9 @@ const TERMINAL_LINES = [
   { text: "✓ Authenticated. Scanning 847 active markets.", type: "success" as const },
   { text: "Found 12 mispriced markets (spread > 3.2%)", type: "output" as const },
   { text: "Placing limit order: YES @ $0.42 on 'Fed Rate Cut July'", type: "trade" as const },
-  { text: "✓ Filled 500 shares @ $0.42 — edge: +4.1%", type: "success" as const },
+  { text: "✓ Filled 500 shares @ $0.42, edge: +4.1%", type: "success" as const },
   { text: "Placing limit order: NO @ $0.71 on 'ETH > $5k Dec'", type: "trade" as const },
-  { text: "✓ Filled 300 shares @ $0.71 — edge: +2.8%", type: "success" as const },
+  { text: "✓ Filled 300 shares @ $0.71, edge: +2.8%", type: "success" as const },
   { text: "Overnight P&L: +$1,247.83 | Win rate: 68.4% | You slept 8 hours", type: "profit" as const },
 ];
 
@@ -39,7 +39,7 @@ const TICKER_MARKETS = [
 const FAQ_ITEMS = [
   {
     q: "Is trading on Polymarket legal?",
-    a: "Polymarket operates as a CFTC-regulated prediction market. Legality depends on your jurisdiction. We provide the trading tools — you are responsible for ensuring compliance with your local laws.",
+    a: "Polymarket operates as a CFTC-regulated prediction market. Legality depends on your jurisdiction. We provide the trading tools and you are responsible for ensuring compliance with your local laws.",
   },
   {
     q: "What are the risks?",
@@ -55,11 +55,11 @@ const FAQ_ITEMS = [
   },
   {
     q: "How do strategy updates work?",
-    a: "Depending on your tier, you receive 3-12 months of strategy updates. Updated Docker images are delivered automatically. After your update period, the bot continues working — you just won't receive new strategies.",
+    a: "Depending on your tier, you receive 3-12 months of strategy updates. Updated Docker images are delivered automatically. After your update period, the bot continues working. You just won't receive new strategies.",
   },
   {
     q: "Which markets does the bot trade?",
-    a: "Any Polymarket market — political predictions, crypto prices, sports, world events. During your strategy call, we configure which categories and risk parameters fit your goals.",
+    a: "Any Polymarket market. Political predictions, crypto prices, sports, world events. During your strategy call, we configure which categories and risk parameters fit your goals.",
   },
   {
     q: "What's your track record?",
@@ -734,7 +734,7 @@ export default function Home() {
                 </h1>
 
                 <p className="hero-sub text-lg sm:text-xl text-text-secondary leading-relaxed max-w-lg mb-10">
-                  Your bot trades Polymarket 24/7 — scanning 800+ markets,
+                  Your bot trades Polymarket 24/7. Scanning 800+ markets,
                   finding mispricings, and executing while you sleep.
                   Yesterday it made $1,247 before your alarm went off.
                 </p>
@@ -837,7 +837,7 @@ export default function Home() {
                 {
                   step: "01",
                   title: "Book a strategy call",
-                  desc: "15 minutes. We learn your goals, risk tolerance, and market interests. No pitch — just strategy.",
+                  desc: "15 minutes. We learn your goals, risk tolerance, and market interests. No pitch, just strategy.",
                 },
                 {
                   step: "02",
@@ -1006,7 +1006,7 @@ export default function Home() {
                 <div className="space-y-5 text-text-secondary leading-relaxed">
                   <p>
                     Two years ago, I lost $12K trading prediction markets manually.
-                    Not because my analysis was wrong — I was right 63% of the time.
+                    Not because my analysis was wrong. I was right 63% of the time.
                     But I&apos;d enter late, exit early, and let fear override the math.
                   </p>
                   <p>
@@ -1084,7 +1084,7 @@ export default function Home() {
                   metricLabel: "drawdown reduction",
                 },
                 {
-                  quote: "I run three bots across different strategies now. Market making has been the most consistent — steady returns without me touching anything. Docker setup took 10 minutes.",
+                  quote: "I run three bots across different strategies now. Market making has been the most consistent. Steady returns without me touching anything. Docker setup took 10 minutes.",
                   name: "James R.",
                   role: "Software engineer & part-time trader",
                   metric: "10 min",
