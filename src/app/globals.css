@@ -1,26 +1,227 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-muted: var(--accent-muted);
+  --color-profit: var(--profit);
+  --color-profit-hover: var(--profit-hover);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-border: var(--border-color);
+  --font-sans: var(--font-instrument);
+  --font-display: var(--font-fraunces);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --background: oklch(8% 0.015 250);
+  --foreground: oklch(93% 0.01 250);
+  --surface-1: oklch(12% 0.012 250);
+  --surface-2: oklch(16% 0.012 250);
+  --surface-3: oklch(20% 0.01 250);
+  --accent: oklch(65% 0.19 250);
+  --accent-hover: oklch(72% 0.17 250);
+  --accent-muted: oklch(35% 0.08 250);
+  --profit: oklch(72% 0.19 155);
+  --profit-hover: oklch(78% 0.17 155);
+  --text-primary: oklch(93% 0.008 250);
+  --text-secondary: oklch(68% 0.015 250);
+  --text-tertiary: oklch(50% 0.01 250);
+  --border-color: oklch(22% 0.015 250);
+
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text-primary);
+  font-family: var(--font-instrument), system-ui, sans-serif;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* ─── Animations ─── */
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes terminal-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px oklch(72% 0.19 155 / 0.3); }
+  50% { box-shadow: 0 0 20px oklch(72% 0.19 155 / 0.5); }
+}
+
+@keyframes signal-dot {
+  0% { transform: translateY(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(200px); opacity: 0; }
+}
+
+.animate-fade-up {
+  animation: fade-up 600ms var(--ease-out-quart) both;
+}
+
+.animate-fade-in {
+  animation: fade-in 500ms var(--ease-out-quart) both;
+}
+
+.cursor-blink {
+  animation: terminal-cursor 1s step-end infinite;
+}
+
+.animate-ticker {
+  animation: ticker-scroll 40s linear infinite;
+}
+
+/* ─── Signal path (desktop only) ─── */
+.signal-path {
+  position: fixed;
+  left: clamp(24px, 4vw, 80px);
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    oklch(65% 0.19 250 / 0.15) 15%,
+    oklch(65% 0.19 250 / 0.1) 50%,
+    oklch(65% 0.19 250 / 0.15) 85%,
+    transparent 100%
+  );
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* The dot is now controlled by JS scroll position — see page.tsx SignalDot */
+
+/* Signal nodes at section boundaries */
+.signal-node {
+  position: absolute;
+  left: clamp(20px, 4vw, 76px);
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1px solid oklch(65% 0.19 250 / 0.3);
+  background: var(--background);
+  z-index: 6;
+  transition: border-color 0.5s, box-shadow 0.5s;
+}
+
+.signal-node.active {
+  border-color: oklch(65% 0.19 250 / 0.6);
+  box-shadow: 0 0 8px oklch(65% 0.19 250 / 0.2);
+}
+
+@media (max-width: 1023px) {
+  .signal-path, .signal-node { display: none; }
+}
+
+/* ─── Section background evolution ─── */
+.bg-evolve-warm {
+  background: oklch(9% 0.012 250);
+}
+
+.bg-evolve-glow {
+  background: radial-gradient(
+    ellipse at 50% 80%,
+    oklch(12% 0.02 250) 0%,
+    oklch(8% 0.015 250) 70%
+  );
+}
+
+/* ─── Pull quote bridge ─── */
+.pull-quote {
+  font-style: italic;
+  background: linear-gradient(
+    to right,
+    oklch(65% 0.19 250 / 0.8),
+    oklch(72% 0.19 155 / 0.8)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Floating pill ─── */
+.floating-pill {
+  animation: pulse-glow 3s ease-in-out infinite;
+  animation-delay: 10s;
+}
+
+/* ─── Hover only for pointer devices ─── */
+@media (hover: hover) and (pointer: fine) {
+  .hover-lift { transition: transform 300ms var(--ease-out-quart); }
+  .hover-lift:hover { transform: translateY(-3px); }
+}
+
+/* ─── Touch targets for coarse pointers ─── */
+@media (pointer: coarse) {
+  button, a { min-height: 44px; }
+}
+
+/* ─── Reduced motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-fade-in {
+    animation: fade-in 200ms ease-out both;
+  }
+  .cursor-blink { animation: none; opacity: 1; }
+  .animate-ticker { animation: none; }
+  .signal-path::after { animation: none; }
+  .floating-pill { animation: none; }
+  html { scroll-behavior: auto; }
+}
+
+/* ─── Content readability over particles ─── */
+main > section,
+main > div {
+  position: relative;
+  z-index: 2;
+}
+
+::selection {
+  background: oklch(65% 0.19 250 / 0.3);
+}
+
+/* ─── Inline booking panel transition ─── */
+.booking-panel {
+  display: grid;
+  transition: grid-template-rows 500ms var(--ease-out-quart);
+}
+.booking-panel[data-open="false"] {
+  grid-template-rows: 0fr;
+}
+.booking-panel[data-open="true"] {
+  grid-template-rows: 1fr;
 }

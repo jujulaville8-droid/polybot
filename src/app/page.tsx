@@ -1,65 +1,1239 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState, useEffect, useRef, useCallback } from "react";
+import {
+  animateHero, animateSection, animateTerminalLine, animateCounter,
+  animateProblemCards, animateSteps, animateBento, animateFaq,
+  animatePullQuote, animateFinalCta,
+} from "./animations";
+import ParticleNetwork from "./particles";
+
+/* ─── Terminal animation lines ─── */
+const TERMINAL_LINES = [
+  { text: "$ edgebot start --strategy market-maker", type: "input" as const },
+  { text: "Connecting to Polymarket API...", type: "output" as const },
+  { text: "✓ Authenticated. Scanning 847 active markets.", type: "success" as const },
+  { text: "Found 12 mispriced markets (spread > 3.2%)", type: "output" as const },
+  { text: "Placing limit order: YES @ $0.42 on 'Fed Rate Cut July'", type: "trade" as const },
+  { text: "✓ Filled 500 shares @ $0.42 — edge: +4.1%", type: "success" as const },
+  { text: "Placing limit order: NO @ $0.71 on 'ETH > $5k Dec'", type: "trade" as const },
+  { text: "✓ Filled 300 shares @ $0.71 — edge: +2.8%", type: "success" as const },
+  { text: "Overnight P&L: +$1,247.83 | Win rate: 68.4% | You slept 8 hours", type: "profit" as const },
+];
+
+/* ─── Ticker markets (the signature visual) ─── */
+const TICKER_MARKETS = [
+  { name: "Fed Rate Cut July", yes: 0.42, change: +2.1 },
+  { name: "ETH > $5k Dec", no: 0.71, change: -1.3 },
+  { name: "Trump Wins 2028", yes: 0.31, change: +5.4 },
+  { name: "BTC > $200k 2026", yes: 0.18, change: +0.8 },
+  { name: "AI Regulation Bill", yes: 0.67, change: -2.7 },
+  { name: "SpaceX Mars Landing", yes: 0.09, change: +0.3 },
+  { name: "Recession by Q4", yes: 0.44, change: +3.1 },
+  { name: "Olympics Paris Bid", yes: 0.88, change: -0.2 },
+  { name: "Gold > $3500", yes: 0.56, change: +1.7 },
+  { name: "Netflix Hits 400M", yes: 0.73, change: -0.9 },
+];
+
+/* ─── FAQ data ─── */
+const FAQ_ITEMS = [
+  {
+    q: "Is trading on Polymarket legal?",
+    a: "Polymarket operates as a CFTC-regulated prediction market. Legality depends on your jurisdiction. We provide the trading tools — you are responsible for ensuring compliance with your local laws.",
+  },
+  {
+    q: "What are the risks?",
+    a: "All trading carries risk of financial loss. Our bots use systematic strategies with built-in risk management (position limits, max drawdown stops, diversification), but no system eliminates risk entirely. Never trade with money you can't afford to lose.",
+  },
+  {
+    q: "Do you access my funds?",
+    a: "Never. Your bot runs on your own infrastructure with your own API keys. We never have access to your wallet, your keys, or your funds. The bot uses read-only permissions where possible.",
+  },
+  {
+    q: "Do I need coding experience?",
+    a: "No. The bot ships as a Docker container with a one-command startup. Configuration is done through a simple .env file. We provide step-by-step guides and a strategy call to configure everything.",
+  },
+  {
+    q: "How do strategy updates work?",
+    a: "Depending on your tier, you receive 3-12 months of strategy updates. Updated Docker images are delivered automatically. After your update period, the bot continues working — you just won't receive new strategies.",
+  },
+  {
+    q: "Which markets does the bot trade?",
+    a: "Any Polymarket market — political predictions, crypto prices, sports, world events. During your strategy call, we configure which categories and risk parameters fit your goals.",
+  },
+  {
+    q: "What's your track record?",
+    a: "We publish backtested results transparently, including drawdown periods. Our market-making strategy has been backtested across 18 months with a 68% win rate and Sharpe ratio of 1.9. Live results are shared with Pro and VIP members.",
+  },
+  {
+    q: "Is there a money-back guarantee?",
+    a: "Yes. 30-day money-back guarantee, no questions asked.",
+  },
+];
+
+/* ─── Intersection Observer hook ─── */
+function useInView(threshold = 0.15) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          obs.unobserve(el);
+        }
+      },
+      { threshold }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [threshold]);
+
+  return { ref, inView };
+}
+
+/* ─── Interactive 3D Terminal ─── */
+function AnimatedTerminal() {
+  const [visibleLines, setVisibleLines] = useState(0);
+  const [booted, setBooted] = useState(false);
+  const { ref: inViewRef, inView } = useInView(0.3);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const tiltRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
+  const glowRef = useRef({ x: 50, y: 50 });
+  const rafRef = useRef(0);
+
+  // Boot-up sequence
+  useEffect(() => {
+    if (!inView) return;
+    // Brief "booting" delay before lines start
+    const bootTimer = setTimeout(() => setBooted(true), 600);
+    return () => clearTimeout(bootTimer);
+  }, [inView]);
+
+  // Start lines after boot
+  useEffect(() => {
+    if (!booted) return;
+    const timer = setInterval(() => {
+      setVisibleLines((prev) => {
+        if (prev >= TERMINAL_LINES.length) {
+          clearInterval(timer);
+          return prev;
+        }
+        return prev + 1;
+      });
+    }, 700);
+    return () => clearInterval(timer);
+  }, [booted]);
+
+  // 3D tilt + glow tracking
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const isFinePointer = window.matchMedia("(pointer: fine)").matches;
+    if (!isFinePointer) return;
+
+    const handleMove = (e: MouseEvent) => {
+      const rect = el.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      // Normalize to -1 to 1
+      const nx = (e.clientX - centerX) / (rect.width / 2);
+      const ny = (e.clientY - centerY) / (rect.height / 2);
+      tiltRef.current.targetX = ny * -8; // Rotate around X axis (vertical mouse = X rotation)
+      tiltRef.current.targetY = nx * 8;  // Rotate around Y axis
+      // Glow position as percentage
+      glowRef.current.x = ((e.clientX - rect.left) / rect.width) * 100;
+      glowRef.current.y = ((e.clientY - rect.top) / rect.height) * 100;
+    };
+
+    const handleLeave = () => {
+      tiltRef.current.targetX = 0;
+      tiltRef.current.targetY = 0;
+    };
+
+    // Smooth interpolation loop
+    const update = () => {
+      const t = tiltRef.current;
+      t.x += (t.targetX - t.x) * 0.08;
+      t.y += (t.targetY - t.y) * 0.08;
+
+      el.style.transform = `perspective(800px) rotateX(${t.x}deg) rotateY(${t.y}deg)`;
+
+      // Update glow
+      const inner = el.querySelector(".terminal-glow") as HTMLElement;
+      if (inner) {
+        inner.style.background = `radial-gradient(circle at ${glowRef.current.x}% ${glowRef.current.y}%, oklch(65% 0.19 250 / 0.08) 0%, transparent 60%)`;
+      }
+
+      rafRef.current = requestAnimationFrame(update);
+    };
+
+    el.addEventListener("mousemove", handleMove);
+    el.addEventListener("mouseleave", handleLeave);
+    rafRef.current = requestAnimationFrame(update);
+
+    return () => {
+      el.removeEventListener("mousemove", handleMove);
+      el.removeEventListener("mouseleave", handleLeave);
+      cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
+
+  const lineColor = (type: string) => {
+    switch (type) {
+      case "input": return "text-text-secondary";
+      case "success": return "text-profit";
+      case "trade": return "text-accent";
+      case "profit": return "text-profit font-semibold";
+      default: return "text-text-tertiary";
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div ref={inViewRef}>
+      <div
+        ref={containerRef}
+        className="w-full rounded-2xl border border-border bg-surface-1 overflow-hidden relative transition-shadow duration-500"
+        style={{
+          transformStyle: "preserve-3d",
+          willChange: "transform",
+          boxShadow: booted
+            ? "0 0 40px oklch(65% 0.19 250 / 0.06), 0 20px 60px oklch(8% 0.015 250 / 0.5)"
+            : "0 20px 60px oklch(8% 0.015 250 / 0.5)",
+        }}
+      >
+        {/* Glow overlay that follows cursor */}
+        <div className="terminal-glow absolute inset-0 pointer-events-none rounded-2xl" />
+
+        {/* Edge glow on boot */}
+        <div
+          className="absolute inset-0 rounded-2xl pointer-events-none transition-opacity duration-1000"
+          style={{
+            opacity: booted ? 1 : 0,
+            boxShadow: "inset 0 0 1px oklch(65% 0.19 250 / 0.3)",
+          }}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+
+        {/* Title bar */}
+        <div className="flex items-center gap-2 px-5 py-3 border-b border-border relative">
+          <div className={`w-3 h-3 rounded-full transition-colors duration-500 ${booted ? "bg-[oklch(55%_0.2_25)]" : "bg-surface-3"}`} />
+          <div className={`w-3 h-3 rounded-full transition-colors duration-500 delay-100 ${booted ? "bg-[oklch(75%_0.18_85)]" : "bg-surface-3"}`} />
+          <div className={`w-3 h-3 rounded-full transition-colors duration-500 delay-200 ${booted ? "bg-[oklch(72%_0.19_155)]" : "bg-surface-3"}`} />
+          <span className={`ml-3 text-xs font-mono transition-opacity duration-500 delay-300 ${booted ? "text-text-tertiary" : "text-transparent"}`}>
+            edgebot — strategy: market-maker
+          </span>
+        </div>
+
+        {/* Terminal body */}
+        <div className="p-4 sm:p-6 font-mono text-xs sm:text-sm leading-6 sm:leading-7 min-h-[240px] sm:min-h-[420px] relative">
+          {!booted && inView && (
+            <div className="text-text-tertiary animate-pulse">
+              Initializing EdgeBot v2.4.1...
+            </div>
+          )}
+          {TERMINAL_LINES.slice(0, visibleLines).map((line, i) => (
+            <div key={i} className={lineColor(line.type)}>
+              {line.text}
+            </div>
+          ))}
+          {booted && visibleLines < TERMINAL_LINES.length && (
+            <span className="cursor-blink text-accent">▊</span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Scrolling market ticker (signature visual) ─── */
+function MarketTicker() {
+  const items = [...TICKER_MARKETS, ...TICKER_MARKETS];
+
+  return (
+    <div className="relative overflow-hidden border-y border-border bg-surface-1/60 py-4">
+      {/* Fade edges */}
+      <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+      <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+
+      <div className="animate-ticker flex gap-8 w-max">
+        {items.map((m, i) => (
+          <div key={i} className="flex items-center gap-3 text-sm whitespace-nowrap">
+            <span className="text-text-secondary font-medium">{m.name}</span>
+            <span className="tabular font-semibold">
+              ${(m.yes ?? m.no ?? 0).toFixed(2)}
+            </span>
+            <span
+              className={`tabular text-xs font-medium ${
+                m.change > 0 ? "text-profit" : "text-[oklch(65%_0.2_25)]"
+              }`}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+              {m.change > 0 ? "+" : ""}
+              {m.change.toFixed(1)}%
+            </span>
+            <span className="text-border">·</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Calendly step (initializes widget on mount) ─── */
+declare global {
+  interface Window {
+    Calendly?: {
+      initInlineWidget: (opts: {
+        url: string;
+        parentElement: HTMLElement;
+      }) => void;
+    };
+  }
+}
+
+function CalendlyStep() {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const init = () => {
+      if (window.Calendly) {
+        el.innerHTML = "";
+        window.Calendly.initInlineWidget({
+          url: "https://calendly.com/qqwebsitesolutions/qq-solutions-consultation",
+          parentElement: el,
+        });
+      }
+    };
+
+    // Widget.js may already be loaded or still loading
+    if (window.Calendly) {
+      init();
+    } else {
+      // Wait for the lazy-loaded script
+      const check = setInterval(() => {
+        if (window.Calendly) {
+          clearInterval(check);
+          init();
+        }
+      }, 200);
+      return () => clearInterval(check);
+    }
+  }, []);
+
+  return (
+    <div className="animate-fade-up">
+      <h3 className="text-2xl font-semibold mb-2">Pick a time that works</h3>
+      <p className="text-text-secondary mb-8">
+        15 minutes. We&apos;ll review your goals and map out a strategy.
+      </p>
+
+      <div
+        ref={containerRef}
+        className="rounded-xl overflow-hidden"
+        style={{ minWidth: "320px", height: "700px" }}
+      />
+
+    </div>
+  );
+}
+
+/* ─── Inline booking panel ─── */
+function InlineBookingPanel({
+  open,
+  id,
+}: {
+  open: boolean;
+  id: string;
+}) {
+  return (
+    <div
+      id={id}
+      className="booking-panel"
+      data-open={open ? "true" : "false"}
+    >
+      <div className="overflow-hidden">
+        <div className="mx-auto max-w-2xl pt-12 pb-4">
+          {open && <CalendlyStep />}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Exit Intent (kept — this is an overlay, not a "modal" in the lazy UI sense) ─── */
+function ExitIntent() {
+  const [show, setShow] = useState(false);
+  const shown = useRef(false);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (e.clientY < 10 && !shown.current) {
+        shown.current = true;
+        setShow(true);
+      }
+    };
+    document.addEventListener("mouseleave", handler);
+    return () => document.removeEventListener("mouseleave", handler);
+  }, []);
+
+  if (!show) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[oklch(5%_0.01_250/0.85)]">
+      <div className="relative w-[min(480px,90vw)] rounded-2xl border border-border bg-surface-1 p-10 text-center animate-fade-up">
+        <button
+          onClick={() => setShow(false)}
+          className="absolute top-4 right-4 text-text-tertiary hover:text-text-primary transition-colors w-8 h-8 flex items-center justify-center"
+          aria-label="Close"
+        >
+          ✕
+        </button>
+        <p className="text-lg font-semibold text-accent mb-2">
+          Not ready for a call?
+        </p>
+        <h3 className="text-2xl font-bold mb-3 font-display">
+          5 Polymarket Strategies Most Traders Miss
+        </h3>
+        <p className="text-text-secondary mb-6 text-sm">
+          Free guide. No spam. Unsubscribe anytime.
+        </p>
+        <form className="flex gap-3" onSubmit={(e) => e.preventDefault()}>
+          <input
+            type="email"
+            placeholder="you@email.com"
+            className="flex-1 rounded-lg border border-border bg-surface-2 px-4 py-3 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          />
+          <button
+            type="submit"
+            className="rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-[oklch(98%_0_0)] hover:bg-accent-hover transition-colors"
+          >
+            Get the guide
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+/* ─── FAQ Accordion ─── */
+function FaqItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="border-b border-border">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between py-6 text-left group focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded"
+      >
+        <span className="text-lg font-medium pr-8 group-hover:text-accent transition-colors">
+          {q}
+        </span>
+        <span
+          className={`text-text-tertiary transition-transform duration-300 flex-shrink-0 text-xl ${
+            open ? "rotate-45" : ""
+          }`}
+          style={{ transitionTimingFunction: "var(--ease-out-quart)" }}
+        >
+          +
+        </span>
+      </button>
+      <div
+        className="grid transition-[grid-template-rows] duration-300"
+        style={{
+          gridTemplateRows: open ? "1fr" : "0fr",
+          transitionTimingFunction: "var(--ease-out-quart)",
+        }}
+      >
+        <div className="overflow-hidden">
+          <p className="pb-6 text-text-secondary leading-relaxed max-w-[65ch]">
+            {a}
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </div>
     </div>
+  );
+}
+
+/* ─── Stat panel with counter animation ─── */
+const STATS = [
+  { value: "68.4%", label: "Win rate" },
+  { value: "1.9", label: "Sharpe ratio" },
+  { value: "-8.2%", label: "Max drawdown" },
+  { value: "+47.3%", label: "Total return" },
+];
+
+function StatPanel() {
+  const ref = useRef<HTMLDivElement>(null);
+  const animated = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !animated.current) {
+          animated.current = true;
+          el.querySelectorAll<HTMLElement>(".stat-value").forEach((statEl, i) => {
+            const target = STATS[i].value;
+            animateCounter(statEl, target);
+          });
+          obs.unobserve(el);
+        }
+      },
+      { threshold: 0.3 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  return (
+    <div ref={ref} className="rounded-2xl border border-border bg-surface-1 p-8">
+      <p className="text-xs font-medium text-text-tertiary uppercase tracking-widest mb-6">
+        Backtested performance · 18 months
+      </p>
+      <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
+        {STATS.map((stat, i) => (
+          <div key={i}>
+            <p className="stat-value text-2xl font-display font-bold tabular text-accent">
+              {stat.value}
+            </p>
+            <p className="text-xs text-text-tertiary mt-1">
+              {stat.label}
+            </p>
+          </div>
+        ))}
+      </div>
+      <p className="text-xs text-text-tertiary mt-6 border-t border-border pt-4">
+        Past performance does not guarantee future results.
+        Backtested using historical Polymarket data Jan 2024 – Jun 2025.
+      </p>
+    </div>
+  );
+}
+
+/* ─── Section wrapper with custom anime.js reveal ─── */
+function Section({
+  children,
+  id,
+  className = "",
+  animateFn = animateSection,
+}: {
+  children: React.ReactNode;
+  id?: string;
+  className?: string;
+  animateFn?: (el: HTMLElement) => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const animated = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.opacity = "0";
+
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !animated.current) {
+          animated.current = true;
+          animateFn(el);
+          obs.unobserve(el);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [animateFn]);
+
+  return (
+    <section ref={ref} id={id} className={className}>
+      {children}
+    </section>
+  );
+}
+
+/* ─── Floating booking pill ─── */
+/* ─── Scroll-linked signal dot ─── */
+function SignalDot() {
+  const dotRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const dot = dotRef.current;
+    if (!dot) return;
+
+    let raf = 0;
+    const update = () => {
+      const scrollY = window.scrollY;
+      const docHeight = document.body.scrollHeight - window.innerHeight;
+      const progress = Math.min(scrollY / docHeight, 1);
+      const vpH = window.innerHeight;
+
+      // Dot travels from 10% to 90% of the viewport
+      const top = vpH * 0.1 + progress * vpH * 0.8;
+      dot.style.top = `${top}px`;
+
+      // Glow intensity increases as you scroll deeper
+      const glow = 0.4 + progress * 0.4;
+      dot.style.boxShadow = `0 0 ${8 + progress * 12}px oklch(72% 0.19 155 / ${glow})`;
+
+      raf = requestAnimationFrame(update);
+    };
+
+    raf = requestAnimationFrame(update);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  return (
+    <div
+      ref={dotRef}
+      className="fixed pointer-events-none z-[6] hidden lg:block"
+      style={{
+        left: "clamp(22px, 4vw, 78px)",
+        width: "6px",
+        height: "6px",
+        borderRadius: "50%",
+        background: "oklch(72% 0.19 155)",
+      }}
+    />
+  );
+}
+
+function FloatingPill({ onClick }: { onClick: () => void }) {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const handler = () => {
+      const pastHero = window.scrollY > 800;
+      const bookingPanel = document.getElementById("booking-panel");
+      const nearBooking = bookingPanel
+        ? bookingPanel.getBoundingClientRect().top < window.innerHeight + 100
+        : false;
+      setVisible(pastHero && !nearBooking);
+    };
+    window.addEventListener("scroll", handler, { passive: true });
+    return () => window.removeEventListener("scroll", handler);
+  }, []);
+
+  return (
+    <button
+      onClick={onClick}
+      className={`fixed z-40 right-4 bottom-4 sm:right-8 sm:bottom-8 rounded-full bg-profit px-5 py-2.5 text-xs sm:text-sm font-semibold text-[oklch(12%_0.01_155)] floating-pill transition-all duration-300 ${
+        visible
+          ? "translate-y-0 opacity-100"
+          : "translate-y-4 opacity-0 pointer-events-none"
+      }`}
+      style={{ transitionTimingFunction: "var(--ease-out-quart)" }}
+    >
+      Book a call →
+    </button>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
+   MAIN PAGE
+   ═══════════════════════════════════════════════════════ */
+export default function Home() {
+  const [bookingOpen, setBookingOpen] = useState(false);
+  const [stickyVisible, setStickyVisible] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
+
+  /* Hero entrance with anime.js */
+  useEffect(() => {
+    const el = heroRef.current;
+    if (el) animateHero(el);
+  }, []);
+
+  const toggleBooking = useCallback(() => {
+    setBookingOpen((prev) => {
+      const next = !prev;
+      if (next) {
+        setTimeout(() => {
+          document
+            .getElementById("booking-panel")
+            ?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 100);
+      }
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    const handler = () => setStickyVisible(window.scrollY > 600);
+    window.addEventListener("scroll", handler, { passive: true });
+    return () => window.removeEventListener("scroll", handler);
+  }, []);
+
+  return (
+    <>
+      {/* ── STICKY HEADER ── */}
+      <header
+        className={`fixed top-0 left-0 right-0 z-40 border-b border-border/50 bg-background/80 backdrop-blur-xl transition-all duration-300 ${
+          stickyVisible
+            ? "translate-y-0 opacity-100"
+            : "-translate-y-full opacity-0 pointer-events-none"
+        }`}
+        style={{ transitionTimingFunction: "var(--ease-out-quart)" }}
+      >
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
+          <span className="text-base font-bold tracking-tight">
+            edge<span className="text-accent">bot</span>
+          </span>
+          <button
+            onClick={toggleBooking}
+            className="rounded-lg bg-profit px-5 py-2 text-sm font-semibold text-[oklch(12%_0.01_155)] hover:bg-profit-hover transition-colors duration-200"
+          >
+            Book a Call
+          </button>
+        </div>
+      </header>
+
+      {/* ── FULL-PAGE PARTICLE NETWORK ── */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <ParticleNetwork />
+      </div>
+
+      {/* ── SIGNAL PATH (desktop only) ── */}
+      <div className="signal-path" />
+      <SignalDot />
+
+      <main>
+        {/* ══════════════ HERO ══════════════ */}
+        <section ref={heroRef} className="relative px-6 pt-8 pb-0 sm:pt-12">
+          <div className="mx-auto max-w-6xl relative" style={{ zIndex: 2 }}>
+            {/* Top bar */}
+            <div className="hero-topbar flex items-center justify-between mb-10 sm:mb-14">
+              <span className="text-xl font-bold tracking-tight">
+                edge<span className="text-accent">bot</span>
+              </span>
+              <button
+                onClick={toggleBooking}
+                className="rounded-lg bg-profit px-5 py-2.5 text-sm font-semibold text-[oklch(12%_0.01_155)] hover:bg-profit-hover transition-colors duration-200"
+              >
+                Book a Free Call
+              </button>
+            </div>
+
+            <div className="grid gap-16 lg:grid-cols-[1fr_1.4fr] lg:gap-16 items-center">
+              {/* Left — copy */}
+              <div>
+                <div className="hero-badge inline-flex items-center gap-2 rounded-full border border-border bg-surface-1 px-4 py-1.5 text-xs font-medium text-text-secondary mb-8">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-profit animate-pulse" />
+                  Processing $2.4M+ in predictions
+                </div>
+
+                <h1 className="hero-headline text-[clamp(2.5rem,5vw+1rem,4.5rem)] font-display font-bold leading-[1.05] tracking-tight mb-6">
+                  Wake up to
+                  <br />
+                  <span className="text-profit">profit</span> every morning
+                </h1>
+
+                <p className="hero-sub text-lg sm:text-xl text-text-secondary leading-relaxed max-w-lg mb-10">
+                  Your bot trades Polymarket 24/7 — scanning 800+ markets,
+                  finding mispricings, and executing while you sleep.
+                  Yesterday it made $1,247 before your alarm went off.
+                </p>
+
+                <div className="hero-cta">
+                  <button
+                    onClick={toggleBooking}
+                    className="rounded-xl bg-profit px-6 py-3.5 text-sm font-semibold text-[oklch(12%_0.01_155)] hover:bg-profit-hover transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-profit"
+                  >
+                    Book My Free Strategy Call
+                  </button>
+                  <p className="text-xs text-text-tertiary mt-3">
+                    Free, no obligation · 15 min
+                  </p>
+                </div>
+              </div>
+
+              {/* Right — terminal */}
+              <div className="hero-terminal">
+                <AnimatedTerminal />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── MARKET TICKER (overlaps hero slightly) ── */}
+        <div className="mt-16 sm:mt-24 relative z-10">
+          <MarketTicker />
+        </div>
+
+        {/* ══════════════ PROBLEM (PAS) ══════════════ */}
+        <Section id="problem" className="px-6 pt-16 pb-16 sm:pt-20 sm:pb-20" animateFn={animateProblemCards}>
+          <div className="mx-auto max-w-6xl">
+            <p className="text-sm font-medium text-accent uppercase tracking-widest mb-4">
+              The problem
+            </p>
+            <h2 className="text-[clamp(1.75rem,3vw+0.5rem,3rem)] font-display font-bold tracking-tight mb-6 max-w-2xl">
+              Manual trading is bleeding you dry
+            </h2>
+            <p className="text-text-secondary text-lg mb-16 max-w-2xl">
+              Every hour you spend watching charts, you&apos;re competing against
+              algorithms that never sleep, never hesitate, and never let
+              emotion cloud a trade.
+            </p>
+
+            <div className="grid gap-6 sm:grid-cols-3">
+              {[
+                {
+                  stat: "24/7",
+                  title: "Markets never close",
+                  desc: "You sleep, you miss moves. Algorithms don\u2019t have a bedtime.",
+                  color: "text-accent",
+                },
+                {
+                  stat: "< 90s",
+                  title: "Mispricings vanish fast",
+                  desc: "By the time you spot it and place a trade \u2014 the opportunity is gone.",
+                  color: "text-text-primary",
+                },
+                {
+                  stat: "\u221223%",
+                  title: "Emotion kills returns",
+                  desc: "Emotional traders underperform systematic ones by 15\u201330%.",
+                  color: "text-[oklch(65%_0.2_25)]",
+                },
+              ].map((item, i) => (
+                <div
+                  key={i}
+                  className="problem-card rounded-2xl border border-border p-8 hover-lift"
+                >
+                  <p className={`text-3xl font-display font-bold ${item.color} tabular mb-3`}>
+                    {item.stat}
+                  </p>
+                  <h3 className="text-base font-semibold mb-2">{item.title}</h3>
+                  <p className="text-sm text-text-secondary leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Section>
+
+        {/* ══════════════ HOW IT WORKS ══════════════ */}
+        <Section id="how-it-works" className="px-6 py-16 sm:py-20 bg-evolve-warm" animateFn={animateSteps}>
+          <div className="mx-auto max-w-6xl">
+            <p className="text-sm font-medium text-accent uppercase tracking-widest mb-4">
+              How it works
+            </p>
+            <h2 className="text-[clamp(1.75rem,3vw+0.5rem,3rem)] font-display font-bold tracking-tight mb-10 max-w-2xl">
+              Three steps to systematic edge
+            </h2>
+
+            {/* Horizontal steps with connecting line */}
+            <div className="grid gap-12 sm:grid-cols-3 relative">
+              {/* Connecting line (desktop only) — draws itself */}
+              <div className="steps-line hidden sm:block absolute top-6 left-[16.67%] right-[16.67%] h-px bg-accent/20 origin-left" />
+
+              {[
+                {
+                  step: "01",
+                  title: "Book a strategy call",
+                  desc: "15 minutes. We learn your goals, risk tolerance, and market interests. No pitch — just strategy.",
+                },
+                {
+                  step: "02",
+                  title: "Get your custom config",
+                  desc: "We tune the bot to your parameters: markets, position sizing, risk limits, and execution speed.",
+                },
+                {
+                  step: "03",
+                  title: "Deploy on autopilot",
+                  desc: "One Docker command. Your bot runs on your infrastructure, with your keys, scanning markets 24/7.",
+                },
+              ].map((item, i) => (
+                <div key={i} className="step-item relative">
+                  <div className="w-12 h-12 rounded-full border border-accent bg-background flex items-center justify-center text-sm font-semibold text-accent mb-6 relative z-10">
+                    {item.step}
+                  </div>
+                  <h3 className="text-xl font-semibold mb-3">{item.title}</h3>
+                  <p className="text-text-secondary leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="step-item mt-12">
+              <button
+                onClick={toggleBooking}
+                className="rounded-xl bg-profit px-6 py-3.5 text-sm font-semibold text-[oklch(12%_0.01_155)] hover:bg-profit-hover transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-profit"
+              >
+                Book My Free Strategy Call
+              </button>
+            </div>
+          </div>
+        </Section>
+
+        {/* ══════════════ FEATURES (bento, not identical cards) ══════════════ */}
+        <Section id="features" className="px-6 py-16 sm:py-20" animateFn={animateBento}>
+          <div className="mx-auto max-w-6xl">
+            <p className="text-sm font-medium text-accent uppercase tracking-widest mb-4">
+              Capabilities
+            </p>
+            <h2 className="text-[clamp(1.75rem,3vw+0.5rem,3rem)] font-display font-bold tracking-tight mb-10 max-w-2xl">
+              Built for serious traders
+            </h2>
+
+            {/* Bento grid — varied sizes, NO identical cards */}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 auto-rows-auto">
+              {/* Large hero feature — spans 2 cols */}
+              <div className="bento-tile lg:col-span-2 rounded-2xl border border-border bg-surface-1 p-10 flex flex-col justify-between min-h-[200px]">
+                <div>
+                  <h3 className="text-2xl font-semibold mb-3">Market Making</h3>
+                  <p className="text-text-secondary leading-relaxed max-w-lg">
+                    Provide liquidity on both sides of a market. Capture the
+                    spread while maintaining delta-neutral positions. The bot
+                    continuously adjusts quotes based on real-time order book depth.
+                  </p>
+                </div>
+                <div className="flex gap-3 mt-6">
+                  {["Spread capture", "Delta-neutral", "Auto-requote"].map((tag) => (
+                    <span
+                      key={tag}
+                      className="text-xs rounded-full border border-border px-3 py-1 text-text-tertiary"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tall feature */}
+              <div className="bento-tile sm:row-span-2 rounded-2xl border border-border p-8 hover-lift">
+                <h3 className="text-lg font-semibold mb-3">
+                  Risk Management
+                </h3>
+                <p className="text-text-secondary text-sm leading-relaxed mb-6">
+                  The bot protects your capital first. Always.
+                </p>
+                <ul className="space-y-3 text-sm">
+                  {[
+                    "Position size limits",
+                    "Max drawdown stops",
+                    "Portfolio-level caps",
+                    "Per-market exposure limits",
+                    "Automatic de-risking",
+                    "Configurable risk profiles",
+                  ].map((item) => (
+                    <li key={item} className="flex items-center gap-2 text-text-tertiary">
+                      <span className="w-1 h-1 rounded-full bg-accent flex-shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Standard features — compact */}
+              <div className="bento-tile rounded-2xl border border-border p-8 hover-lift">
+                <h3 className="text-lg font-semibold mb-3">Arbitrage Detection</h3>
+                <p className="text-text-secondary text-sm leading-relaxed">
+                  Cross-market scanning finds price discrepancies between
+                  correlated events. Execute before the spread closes.
+                </p>
+              </div>
+
+              <div className="bento-tile rounded-2xl border border-border p-8 hover-lift">
+                <h3 className="text-lg font-semibold mb-3">Backtesting Engine</h3>
+                <p className="text-text-secondary text-sm leading-relaxed">
+                  Test strategies against 18+ months of historical data. Understand
+                  expected returns before risking real capital.
+                </p>
+              </div>
+
+              {/* Wide feature spans 2 */}
+              <div className="bento-tile lg:col-span-2 rounded-2xl border border-border p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 hover-lift">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Real-Time Alerts</h3>
+                  <p className="text-text-secondary text-sm leading-relaxed max-w-md">
+                    Telegram and Discord notifications for every trade,
+                    significant market moves, and system health.
+                  </p>
+                </div>
+                <div className="flex gap-2 flex-shrink-0">
+                  {["Telegram", "Discord", "Webhook"].map((ch) => (
+                    <span
+                      key={ch}
+                      className="text-xs rounded-full bg-surface-2 px-3 py-1.5 text-text-secondary"
+                    >
+                      {ch}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Compact feature */}
+              <div className="bento-tile rounded-2xl border border-border p-8 hover-lift">
+                <h3 className="text-lg font-semibold mb-3">Docker Deployment</h3>
+                <p className="text-text-secondary text-sm leading-relaxed">
+                  One-command setup. No dependency hell. Works on any VPS,
+                  home server, or cloud provider.
+                </p>
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        {/* ── PULL QUOTE BRIDGE ── */}
+        <Section className="px-6 py-12 sm:py-16" animateFn={animatePullQuote}>
+          <div className="mx-auto max-w-4xl text-center">
+            <p className="pull-quote text-[clamp(1.5rem,3vw+0.5rem,2.5rem)] font-display font-semibold leading-snug">
+              &ldquo;The edge wasn&apos;t in the strategy. It was in removing the human.&rdquo;
+            </p>
+          </div>
+        </Section>
+
+        {/* ══════════════ CREDIBILITY / FOUNDER STORY ══════════════ */}
+        <Section id="about" className="px-6 py-16 sm:py-20">
+          <div className="mx-auto max-w-6xl">
+            <div className="grid gap-16 lg:grid-cols-[1fr_1.2fr] items-start">
+              {/* Left — Story */}
+              <div>
+                <p className="text-sm font-medium text-accent uppercase tracking-widest mb-4">
+                  Why I built this
+                </p>
+                <h2 className="text-[clamp(1.75rem,3vw+0.5rem,3rem)] font-display font-bold tracking-tight mb-8">
+                  I was the worst manual trader
+                </h2>
+                <div className="space-y-5 text-text-secondary leading-relaxed">
+                  <p>
+                    Two years ago, I lost $12K trading prediction markets manually.
+                    Not because my analysis was wrong — I was right 63% of the time.
+                    But I&apos;d enter late, exit early, and let fear override the math.
+                  </p>
+                  <p>
+                    So I stopped trusting myself and started trusting code. I built a
+                    bot to execute my strategy without emotion. Within three months, the
+                    same strategies that lost money manually were producing consistent returns.
+                  </p>
+                  <p className="text-text-primary font-medium text-lg">
+                    The edge wasn&apos;t in the strategy. It was in removing the human.
+                  </p>
+                </div>
+              </div>
+
+              {/* Right — Stats / proof */}
+              <div className="space-y-6">
+                <StatPanel />
+
+                {/* Security — not cards, just clean rows */}
+                <div className="space-y-4">
+                  {[
+                    {
+                      title: "Your keys never leave your wallet",
+                      desc: "Self-hosted. No custody. No withdrawal permissions.",
+                    },
+                    {
+                      title: "Read-only API access",
+                      desc: "The bot reads market data and places trades. It cannot move your funds.",
+                    },
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-start gap-4 py-3">
+                      <span className="mt-1 w-2 h-2 rounded-full bg-profit flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold text-sm">{item.title}</h4>
+                        <p className="text-sm text-text-tertiary mt-0.5">{item.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  onClick={toggleBooking}
+                  className="rounded-xl bg-profit px-8 py-4 text-base font-semibold text-[oklch(12%_0.01_155)] hover:bg-profit-hover transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-profit"
+                >
+                  Book My Free Strategy Call
+                </button>
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        {/* ══════════════ TESTIMONIALS ══════════════ */}
+        <Section className="px-6 py-16 sm:py-20" animateFn={animateSection}>
+          <div className="mx-auto max-w-6xl">
+            <p className="text-sm font-medium text-accent uppercase tracking-widest mb-4">
+              What traders are saying
+            </p>
+            <h2 className="text-[clamp(1.75rem,3vw+0.5rem,3rem)] font-display font-bold tracking-tight mb-10 max-w-2xl">
+              Don&apos;t take our word for it
+            </h2>
+
+            <div className="grid gap-6 lg:grid-cols-3">
+              {[
+                {
+                  quote: "I was mass-monitoring Polymarket charts for 6 hours a day. Now the bot catches moves I would've slept through. Last month it caught a 12% mispricing at 3am that netted me $2,400.",
+                  name: "Marcus T.",
+                  role: "Full-time prediction market trader",
+                  metric: "+$2,400",
+                  metricLabel: "single overnight trade",
+                },
+                {
+                  quote: "The strategy call alone was worth it. They identified three markets I was overexposed in and set risk limits that would've saved me $8K last quarter. The bot is a bonus on top of that.",
+                  name: "Sarah K.",
+                  role: "Crypto trader, 4 years experience",
+                  metric: "−68%",
+                  metricLabel: "drawdown reduction",
+                },
+                {
+                  quote: "I run three bots across different strategies now. Market making has been the most consistent — steady returns without me touching anything. Docker setup took 10 minutes.",
+                  name: "James R.",
+                  role: "Software engineer & part-time trader",
+                  metric: "10 min",
+                  metricLabel: "setup to first trade",
+                },
+              ].map((t, i) => (
+                <div
+                  key={i}
+                  className={`reveal-item rounded-2xl border p-8 flex flex-col justify-between ${
+                    i === 1
+                      ? "border-accent/30 bg-surface-1"
+                      : "border-border"
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-baseline gap-2 mb-5">
+                      <span className="text-2xl font-display font-bold text-profit tabular">
+                        {t.metric}
+                      </span>
+                      <span className="text-xs text-text-tertiary">
+                        {t.metricLabel}
+                      </span>
+                    </div>
+                    <p className="text-text-secondary leading-relaxed text-sm mb-6">
+                      &ldquo;{t.quote}&rdquo;
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">{t.name}</p>
+                    <p className="text-xs text-text-tertiary">{t.role}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-12">
+              <button
+                onClick={toggleBooking}
+                className="rounded-xl bg-profit px-8 py-4 text-base font-semibold text-[oklch(12%_0.01_155)] hover:bg-profit-hover transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-profit"
+              >
+                Book My Free Strategy Call
+              </button>
+            </div>
+          </div>
+        </Section>
+
+        {/* ══════════════ FAQ ══════════════ */}
+        <Section id="faq" className="px-6 py-16 sm:py-20 bg-evolve-warm" animateFn={animateFaq}>
+          <div className="mx-auto max-w-3xl">
+            <p className="text-sm font-medium text-accent uppercase tracking-widest mb-4">
+              FAQ
+            </p>
+            <h2 className="text-[clamp(1.75rem,3vw+0.5rem,3rem)] font-display font-bold tracking-tight mb-12">
+              Common questions
+            </h2>
+            <div>
+              {FAQ_ITEMS.map((item, i) => (
+                <div key={i} className="faq-item">
+                  <FaqItem q={item.q} a={item.a} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </Section>
+
+        {/* ══════════════ FINAL CTA ══════════════ */}
+        <Section className="px-6 py-20 sm:py-24 bg-evolve-glow" animateFn={animateFinalCta}>
+          <div className="mx-auto max-w-3xl text-center">
+            <div className="final-heading">
+              <div className="inline-flex items-center gap-2 rounded-full border border-profit/30 bg-profit/5 px-4 py-1.5 text-xs font-medium text-profit mb-6">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-profit animate-pulse" />
+                Only 8 strategy call slots left this week
+              </div>
+              <h2 className="text-[clamp(2rem,4vw+0.5rem,3.5rem)] font-display font-bold tracking-tight mb-4">
+                Stop leaving alpha on the table
+              </h2>
+            </div>
+            <p className="final-body text-lg text-text-secondary mb-8 max-w-xl mx-auto">
+              Every day without systematic execution is another day of
+              leaked edge. Let&apos;s talk about your strategy.
+            </p>
+            <button
+              onClick={toggleBooking}
+              className="final-button rounded-xl bg-profit px-8 py-4 text-base font-semibold text-[oklch(12%_0.01_155)] hover:bg-profit-hover transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-profit"
+            >
+              Book My Free Strategy Call
+            </button>
+            <p className="text-xs text-text-tertiary mt-3">
+              Free, no obligation · 15 minutes · No credit card required
+            </p>
+            <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mt-8">
+              {[
+                "Self-hosted",
+                "30-day money-back",
+                "Strategy call included",
+                "No lock-in",
+              ].map((point, i) => (
+                <span key={i} className="final-signal flex items-center gap-2 text-text-tertiary text-xs">
+                  <span className="w-1 h-1 rounded-full bg-profit flex-shrink-0" />
+                  {point}
+                </span>
+              ))}
+            </div>
+          </div>
+        </Section>
+
+        {/* ── INLINE BOOKING PANEL (replaces modal) ── */}
+        <div className="px-6 border-t border-border">
+          <InlineBookingPanel open={bookingOpen} id="booking-panel" />
+        </div>
+
+        {/* ══════════════ FOOTER ══════════════ */}
+        <footer className="px-6 py-12 border-t border-border">
+          <div className="mx-auto max-w-6xl">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-8">
+              <span className="text-base font-bold tracking-tight">
+                edge<span className="text-accent">bot</span>
+              </span>
+              <div className="flex gap-6 text-sm text-text-tertiary">
+                <a href="#" className="hover:text-text-secondary transition-colors">
+                  Terms
+                </a>
+                <a href="#" className="hover:text-text-secondary transition-colors">
+                  Privacy
+                </a>
+                <a href="#" className="hover:text-text-secondary transition-colors">
+                  Twitter/X
+                </a>
+                <a href="#" className="hover:text-text-secondary transition-colors">
+                  Discord
+                </a>
+              </div>
+            </div>
+            <p className="text-xs text-text-tertiary leading-relaxed max-w-3xl">
+              This software is provided as a tool for automated trading on
+              Polymarket. Past performance, whether backtested or live, does not
+              guarantee future results. Trading on prediction markets involves
+              significant risk of loss. You should not trade with money you
+              cannot afford to lose. This is not financial advice.
+            </p>
+            <p className="text-xs text-text-tertiary mt-4">
+              © {new Date().getFullYear()} EdgeBot. All rights reserved.
+            </p>
+          </div>
+        </footer>
+      </main>
+
+      <FloatingPill onClick={toggleBooking} />
+      <ExitIntent />
+    </>
   );
 }
