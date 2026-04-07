@@ -320,7 +320,7 @@ export default function Home() {
             </div>
 
             {/* Terminal */}
-            <div className="lg:col-span-6 relative min-w-0">
+            <div className="lg:col-span-6 relative min-w-0 mb-8">
               <div className="glass-panel rounded-xl overflow-hidden shadow-2xl shadow-neon/5 border border-border/50">
                 {/* Terminal header */}
                 <div className="bg-surface border-b border-border px-4 py-2 flex items-center justify-between text-xs font-mono text-text-muted">
@@ -380,8 +380,8 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Accuracy widget — below terminal */}
-              <div className="mt-4 glass-panel p-4 rounded-lg flex items-center gap-4 text-sm font-mono border-l-2 border-l-neon shadow-xl w-64 hidden sm:flex">
+              {/* Accuracy widget — slight overlap with terminal bottom-right */}
+              <div className="absolute -bottom-10 right-6 glass-panel p-4 rounded-lg flex items-center gap-4 text-sm font-mono border-l-2 border-l-neon shadow-xl w-64 hidden sm:flex z-10">
                 <div className="w-10 h-10 rounded bg-neon/10 flex items-center justify-center text-neon text-xl">
                   <i className="ph-fill ph-chart-polar" />
                 </div>
