@@ -334,7 +334,7 @@ export default function Home() {
                 </div>
 
                 {/* Terminal body */}
-                <div className="p-6 font-mono text-sm leading-relaxed">
+                <div className="p-6 pb-12 font-mono text-sm leading-relaxed">
                   <span className="text-accent">import</span> polymarket_api
                   <br />
                   <span className="text-accent">import</span> xgboost{" "}
@@ -380,8 +380,8 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Accuracy widget — slight overlap with terminal bottom-right */}
-              <div className="absolute -bottom-10 right-6 glass-panel p-4 rounded-lg flex items-center gap-4 text-sm font-mono border-l-2 border-l-neon shadow-xl w-64 hidden sm:flex z-10">
+              {/* Accuracy widget — overlaps terminal's empty bottom-left area */}
+              <div className="absolute -bottom-8 left-6 glass-panel p-4 rounded-lg flex items-center gap-4 text-sm font-mono border-l-2 border-l-neon shadow-xl w-64 hidden sm:flex z-10">
                 <div className="w-10 h-10 rounded bg-neon/10 flex items-center justify-center text-neon text-xl">
                   <i className="ph-fill ph-chart-polar" />
                 </div>
