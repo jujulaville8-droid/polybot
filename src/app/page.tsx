@@ -10,17 +10,17 @@ import ParticleNetwork from "./particles";
 
 /* ─── Terminal animation lines ─── */
 const TERMINAL_LINES = [
-  { text: "$ cruise-alpha init --project my-first-bot", type: "input" as const },
-  { text: "Scaffolding your bot project...", type: "output" as const },
-  { text: "✓ Project created. Opening tutorial...", type: "success" as const },
+  { text: "$ cruise-alpha init --project my-ai-bot", type: "input" as const },
+  { text: "Scaffolding AI-powered bot project...", type: "output" as const },
+  { text: "✓ Project created. Loading ML pipeline...", type: "success" as const },
   { text: "Lesson 1: Connecting to the Polymarket API", type: "output" as const },
-  { text: "✓ API connection established. 847 markets loaded.", type: "success" as const },
-  { text: "Lesson 2: Building your market scanner", type: "output" as const },
-  { text: "✓ Scanner found 12 mispriced markets (spread > 3.2%)", type: "success" as const },
-  { text: "Lesson 3: Writing your first trading strategy", type: "trade" as const },
-  { text: "✓ Backtest complete: 68.4% win rate over 18 months", type: "success" as const },
-  { text: "$ cruise-alpha deploy", type: "input" as const },
-  { text: "✓ Your bot is live. You built this.", type: "profit" as const },
+  { text: "✓ API connected. 847 markets loaded into feature store.", type: "success" as const },
+  { text: "Lesson 2: Training your prediction model", type: "output" as const },
+  { text: "✓ Model trained on 18mo data. Accuracy: 71.2%", type: "success" as const },
+  { text: "Lesson 3: Deploying the self-learning loop", type: "trade" as const },
+  { text: "✓ Reinforcement loop active. Bot adapts to new data.", type: "success" as const },
+  { text: "$ cruise-alpha deploy --live", type: "input" as const },
+  { text: "✓ AI bot is live and learning. You built this.", type: "profit" as const },
 ];
 
 /* ─── Ticker markets (the signature visual) ─── */
@@ -40,8 +40,8 @@ const TICKER_MARKETS = [
 /* ─── FAQ data ─── */
 const FAQ_ITEMS = [
   {
-    q: "Do I need coding experience?",
-    a: "Some basics help, but it's not required. The curriculum starts from scratch and walks you through Python fundamentals, API integration, and bot architecture step by step. Most students with zero coding background have a working bot by week 3.",
+    q: "Do I need coding or AI experience?",
+    a: "No. The curriculum starts from Python basics and builds up to machine learning concepts step by step. You don't need a math degree. Most students with zero ML background have a trained model running by week 4.",
   },
   {
     q: "Is trading on Polymarket legal?",
@@ -57,11 +57,15 @@ const FAQ_ITEMS = [
   },
   {
     q: "How is this different from buying a bot?",
-    a: "When you buy a bot, you get a black box. When it breaks, you're stuck. Here, you build the bot yourself and understand every line. You can customize it, fix it, and evolve it. No vendor dependency, ever.",
+    a: "Bought bots run static rules that decay over time. Here, you build an AI-powered bot that retrains on new data and adapts to changing markets. You understand the model, the features, and the training pipeline. No black boxes, no vendor dependency.",
   },
   {
     q: "How long does it take?",
-    a: "Most students deploy their first bot within 3 weeks, spending a few hours per week. The full curriculum covers advanced strategies over 6-8 weeks, but you can go at your own pace.",
+    a: "Most students deploy their first AI bot within 4 weeks, spending a few hours per week. The full curriculum covers advanced ML strategies over 6-8 weeks, but you can go at your own pace.",
+  },
+  {
+    q: "What kind of AI does the bot use?",
+    a: "You'll build models using gradient-boosted trees and logistic regression for probability estimation, plus a reinforcement learning loop for strategy optimization. The bot retrains on new market outcomes automatically. No GPT wrapper stuff -- real predictive ML.",
   },
   {
     q: "Which markets can my bot trade?",
@@ -226,7 +230,7 @@ function AnimatedTerminal() {
           <div className={`w-3 h-3 rounded-full transition-colors duration-500 delay-100 ${booted ? "bg-[oklch(75%_0.18_85)]" : "bg-surface-3"}`} />
           <div className={`w-3 h-3 rounded-full transition-colors duration-500 delay-200 ${booted ? "bg-[oklch(72%_0.19_155)]" : "bg-surface-3"}`} />
           <span className={`ml-3 text-xs font-mono transition-opacity duration-500 delay-300 ${booted ? "text-text-tertiary" : "text-transparent"}`}>
-            cruise-alpha — learn: module-1
+            cruise-alpha — ai-training: module-1
           </span>
         </div>
 
@@ -234,7 +238,7 @@ function AnimatedTerminal() {
         <div className="p-4 sm:p-6 font-mono text-xs sm:text-sm leading-6 sm:leading-7 min-h-[240px] sm:min-h-[420px] relative">
           {!booted && inView && (
             <div className="text-text-tertiary animate-pulse">
-              Loading Cruise Alpha Curriculum v2.4...
+              Loading Cruise Alpha AI Curriculum v2.4...
             </div>
           )}
           {TERMINAL_LINES.slice(0, visibleLines).map((line, i) => (
@@ -400,7 +404,7 @@ function ExitIntent() {
           Not ready to enroll?
         </p>
         <h3 className="text-2xl font-bold mb-3 font-display">
-          Free Guide: Build Your First Polymarket Bot
+          Free Guide: Build Your First AI Trading Bot
         </h3>
         <p className="text-text-secondary mb-6 text-sm">
           A starter tutorial to get your feet wet. No spam. Unsubscribe anytime.
@@ -726,19 +730,20 @@ export default function Home() {
               <div>
                 <div className="hero-badge inline-flex items-center gap-2 rounded-full border border-border bg-surface-1 px-4 py-1.5 text-xs font-medium text-text-secondary mb-8">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-profit animate-pulse" />
-                  200+ students building bots
+                  200+ students building AI bots
                 </div>
 
                 <h1 className="hero-headline text-[clamp(2.5rem,5vw+1rem,4.5rem)] font-display font-bold leading-[1.05] tracking-tight mb-6">
-                  Build the bot.
+                  Build a bot that
                   <br />
-                  <span className="text-profit">Keep</span> the edge.
+                  <span className="text-profit">learns</span> while you sleep
                 </h1>
 
                 <p className="hero-sub text-lg sm:text-xl text-text-secondary leading-relaxed max-w-lg mb-10">
-                  Learn to build your own Polymarket trading bot from scratch.
-                  No black boxes, no vendor lock-in. You write the code,
-                  you understand the strategy, you own the whole thing.
+                  Learn to build AI-powered Polymarket trading bots that
+                  adapt to new data, refine their own strategies, and get
+                  smarter with every trade. You write the code, you train
+                  the model, you own the whole system.
                 </p>
 
                 <div className="hero-cta">
@@ -799,32 +804,32 @@ export default function Home() {
               The problem
             </p>
             <h2 className="text-[clamp(1.75rem,3vw+0.5rem,3rem)] font-display font-bold tracking-tight mb-6 max-w-2xl">
-              Buying someone else&apos;s bot is a trap
+              Most bots are stuck in the past
             </h2>
             <p className="text-text-secondary text-lg mb-16 max-w-2xl">
-              You hand over money for a black box you don&apos;t understand,
-              can&apos;t customize, and can&apos;t fix when it breaks. The real
-              edge is knowing how to build one yourself.
+              Static bots run the same rules forever. Markets change, strategies
+              decay, and your edge disappears. AI-powered bots learn from new
+              data and adapt. That&apos;s the difference.
             </p>
 
             <div className="grid gap-6 sm:grid-cols-3">
               {[
                 {
-                  stat: "???",
-                  title: "Black box strategies",
-                  desc: "You don\u2019t know what it\u2019s doing or why. When it loses money, you\u2019re helpless.",
+                  stat: "0",
+                  title: "Static bots can\u2019t learn",
+                  desc: "Hard-coded rules break when market conditions shift. They don\u2019t adapt, they just stop working.",
                   color: "text-accent",
                 },
                 {
-                  stat: "$0",
-                  title: "No customization",
-                  desc: "One-size-fits-all bots can\u2019t adapt to your risk tolerance, goals, or market thesis.",
+                  stat: "???",
+                  title: "Black box AI is worse",
+                  desc: "Vendor bots claim to use AI but you can\u2019t see the model, the data, or why it made a trade.",
                   color: "text-text-primary",
                 },
                 {
                   stat: "\u221E",
-                  title: "Vendor lock-in",
-                  desc: "When the vendor disappears or raises prices, your entire strategy goes with them.",
+                  title: "Real AI adapts forever",
+                  desc: "A self-learning bot retrains on new outcomes, adjusts to regime changes, and compounds its own edge.",
                   color: "text-[oklch(65%_0.2_25)]",
                 },
               ].map((item, i) => (
@@ -852,7 +857,7 @@ export default function Home() {
               How it works
             </p>
             <h2 className="text-[clamp(1.75rem,3vw+0.5rem,3rem)] font-display font-bold tracking-tight mb-10 max-w-2xl">
-              Three steps to your own trading bot
+              Three steps to your own AI trading bot
             </h2>
 
             {/* Horizontal steps with connecting line */}
@@ -864,17 +869,17 @@ export default function Home() {
                 {
                   step: "01",
                   title: "Book an intro call",
-                  desc: "15 minutes. We learn your background, goals, and experience level. We map out which track fits you best.",
+                  desc: "15 minutes. We assess your background and goals, then map out the right track -- from Python basics to advanced ML.",
                 },
                 {
                   step: "02",
-                  title: "Follow the curriculum",
-                  desc: "Structured lessons take you from API basics to live strategies. Build, backtest, and iterate with guidance.",
+                  title: "Build and train your bot",
+                  desc: "Structured lessons take you from API basics to training AI models that learn from market data and improve over time.",
                 },
                 {
                   step: "03",
-                  title: "Deploy your own bot",
-                  desc: "Ship what you built to your own infrastructure. Your code, your keys, your strategy. No dependencies on us.",
+                  title: "Deploy a self-learning system",
+                  desc: "Ship your AI bot to your own infrastructure. It retrains on new data, adapts to changing markets, and gets smarter on its own.",
                 },
               ].map((item, i) => (
                 <div key={i} className="step-item relative">
@@ -907,7 +912,7 @@ export default function Home() {
               What you&apos;ll build
             </p>
             <h2 className="text-[clamp(1.75rem,3vw+0.5rem,3rem)] font-display font-bold tracking-tight mb-10 max-w-2xl">
-              Every module, a working piece of your bot
+              Every module, a working piece of your AI bot
             </h2>
 
             {/* Bento grid — varied sizes, NO identical cards */}
@@ -915,15 +920,15 @@ export default function Home() {
               {/* Large hero feature — spans 2 cols */}
               <div className="bento-tile lg:col-span-2 rounded-2xl border border-border bg-surface-1 p-10 flex flex-col justify-between min-h-[200px]">
                 <div>
-                  <h3 className="text-2xl font-semibold mb-3">Market Making Strategy</h3>
+                  <h3 className="text-2xl font-semibold mb-3">AI Prediction Engine</h3>
                   <p className="text-text-secondary leading-relaxed max-w-lg">
-                    Learn to provide liquidity on both sides of a market. You&apos;ll
-                    build a bot that captures spreads, maintains delta-neutral positions,
-                    and adjusts quotes based on real-time order book depth.
+                    Train a machine learning model that estimates true market probabilities
+                    from historical outcomes, sentiment data, and on-chain signals. Your bot
+                    doesn&apos;t follow static rules -- it learns what works and adapts.
                   </p>
                 </div>
                 <div className="flex gap-3 mt-6">
-                  {["Spread capture", "Delta-neutral", "Auto-requote"].map((tag) => (
+                  {["ML models", "Feature engineering", "Self-retraining"].map((tag) => (
                     <span
                       key={tag}
                       className="text-xs rounded-full border border-border px-3 py-1 text-text-tertiary"
@@ -937,19 +942,19 @@ export default function Home() {
               {/* Tall feature */}
               <div className="bento-tile sm:row-span-2 rounded-2xl border border-border p-8 hover-lift">
                 <h3 className="text-lg font-semibold mb-3">
-                  Risk Management
+                  Adaptive Risk Management
                 </h3>
                 <p className="text-text-secondary text-sm leading-relaxed mb-6">
-                  You&apos;ll implement every layer of capital protection yourself.
+                  Risk controls that adjust dynamically based on model confidence and market volatility.
                 </p>
                 <ul className="space-y-3 text-sm">
                   {[
-                    "Position size limits",
-                    "Max drawdown stops",
+                    "Confidence-scaled sizing",
+                    "Dynamic drawdown stops",
                     "Portfolio-level caps",
-                    "Per-market exposure limits",
+                    "Volatility-aware limits",
                     "Automatic de-risking",
-                    "Configurable risk profiles",
+                    "Model uncertainty gating",
                   ].map((item) => (
                     <li key={item} className="flex items-center gap-2 text-text-tertiary">
                       <span className="w-1 h-1 rounded-full bg-accent flex-shrink-0" />
@@ -961,18 +966,18 @@ export default function Home() {
 
               {/* Standard features — compact */}
               <div className="bento-tile rounded-2xl border border-border p-8 hover-lift">
-                <h3 className="text-lg font-semibold mb-3">Arbitrage Detection</h3>
+                <h3 className="text-lg font-semibold mb-3">Reinforcement Learning Loop</h3>
                 <p className="text-text-secondary text-sm leading-relaxed">
-                  Build a cross-market scanner that finds price discrepancies
-                  between correlated events and executes before the spread closes.
+                  Build a feedback loop where your bot learns from its own trade
+                  outcomes. It retrains on new results and adjusts strategy weights automatically.
                 </p>
               </div>
 
               <div className="bento-tile rounded-2xl border border-border p-8 hover-lift">
-                <h3 className="text-lg font-semibold mb-3">Backtesting Engine</h3>
+                <h3 className="text-lg font-semibold mb-3">Backtesting + Model Eval</h3>
                 <p className="text-text-secondary text-sm leading-relaxed">
-                  Build your own backtester using 18+ months of historical data. Validate
-                  strategies before risking real capital.
+                  Validate AI models against 18+ months of historical data. Compare
+                  model accuracy, calibration, and Sharpe ratio before going live.
                 </p>
               </div>
 
@@ -1013,7 +1018,7 @@ export default function Home() {
         <Section className="px-6 py-12 sm:py-16" animateFn={animatePullQuote}>
           <div className="mx-auto max-w-4xl text-center">
             <p className="pull-quote text-[clamp(1.5rem,3vw+0.5rem,2.5rem)] font-display font-semibold leading-snug">
-              &ldquo;The edge wasn&apos;t in buying a bot. It was in understanding how to build one.&rdquo;
+              &ldquo;Static bots decay. AI bots compound. The edge is in building one that learns.&rdquo;
             </p>
           </div>
         </Section>
@@ -1038,15 +1043,17 @@ export default function Home() {
                   </p>
                   <p>
                     So I stopped trusting myself and started trusting code. I built a
-                    bot to execute my strategy without emotion. Within three months, the
-                    same strategies that lost money manually were producing consistent returns.
+                    bot to execute my strategy without emotion. But the real breakthrough
+                    came when I added AI -- a model that learned from every trade outcome
+                    and retrained itself on new data. The bot started finding edges I never would have.
                   </p>
                   <p>
                     Then I realized: the most valuable thing wasn&apos;t the bot itself.
-                    It was everything I learned building it. Now I teach others to do the same.
+                    It was understanding how to build AI systems that improve on their own.
+                    Now I teach others to do the same.
                   </p>
                   <p className="text-text-primary font-medium text-lg">
-                    The edge isn&apos;t in buying a bot. It&apos;s in knowing how to build one.
+                    The edge isn&apos;t in the bot. It&apos;s in building one that gets smarter over time.
                   </p>
                 </div>
               </div>
@@ -1101,25 +1108,25 @@ export default function Home() {
             <div className="grid gap-6 lg:grid-cols-3">
               {[
                 {
-                  quote: "I had zero coding experience. By week 3 my bot was live on Polymarket and caught a 12% mispricing at 3am. The feeling of building something that makes money while you sleep is unreal.",
+                  quote: "I had zero ML experience. By week 4 my bot was live with a trained model that keeps improving on its own. It caught a mispricing at 3am that my old static bot would have missed completely.",
                   name: "Marcus T.",
-                  role: "Former manual trader, now bot builder",
-                  metric: "3 wks",
-                  metricLabel: "to first live bot",
+                  role: "Former manual trader, now AI bot builder",
+                  metric: "4 wks",
+                  metricLabel: "to first AI bot",
                 },
                 {
-                  quote: "I'd bought two different trading bots before this. Both broke within months and the vendors ghosted. Now I understand every line of code in my system. When something breaks, I fix it myself in minutes.",
+                  quote: "I'd bought two trading bots before this. Static rules, both broke within months. Now my bot retrains weekly on new outcomes. It's getting better, not worse. That's the whole difference.",
                   name: "Sarah K.",
                   role: "Crypto trader, 4 years experience",
-                  metric: "100%",
-                  metricLabel: "code ownership",
+                  metric: "+12%",
+                  metricLabel: "model accuracy gain over 3 months",
                 },
                 {
-                  quote: "I'm a software engineer but knew nothing about trading systems. The curriculum clicked immediately. I run three strategies now and I'm already building a fourth one on my own.",
+                  quote: "I'm a software engineer but had never touched ML. The curriculum made it click. My bot now uses sentiment analysis and on-chain data to generate its own signals. I couldn't have designed those rules manually.",
                   name: "James R.",
                   role: "Software engineer, cohort 2",
-                  metric: "4",
-                  metricLabel: "custom strategies built",
+                  metric: "3",
+                  metricLabel: "AI models in production",
                 },
               ].map((t, i) => (
                 <div
@@ -1190,12 +1197,12 @@ export default function Home() {
                 Next cohort starts soon
               </div>
               <h2 className="text-[clamp(2rem,4vw+0.5rem,3.5rem)] font-display font-bold tracking-tight mb-4">
-                Stop renting edge. Start building it.
+                Build a bot that gets smarter every day
               </h2>
             </div>
             <p className="final-body text-lg text-text-secondary mb-8 max-w-xl mx-auto">
-              Every day without your own system is another day depending on
-              someone else&apos;s. Let&apos;s talk about where to start.
+              Static bots lose their edge. AI bots sharpen theirs. Learn to
+              build one that learns from every trade it makes.
             </p>
             <button
               onClick={toggleBooking}

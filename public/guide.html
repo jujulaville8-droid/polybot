@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cruise Alpha — How Prediction Market Bots Actually Work</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700;800&family=Instrument+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: oklch(8% 0.015 250);
+    --surface-1: oklch(12% 0.012 250);
+    --surface-2: oklch(16% 0.012 250);
+    --accent: oklch(65% 0.19 250);
+    --profit: oklch(72% 0.19 155);
+    --text-primary: oklch(93% 0.008 250);
+    --text-secondary: oklch(68% 0.015 250);
+    --text-tertiary: oklch(50% 0.01 250);
+    --border: oklch(22% 0.015 250);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  @page { size: letter; margin: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: 'Instrument Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.6;
+  }
+
+  .page {
+    width: 8.5in;
+    height: 11in;
+    padding: 0.6in 0.75in;
+    position: relative;
+    overflow: hidden;
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .page::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--bg);
+    z-index: -2;
+  }
+
+  .page-1::after {
+    content: '';
+    position: absolute;
+    top: -30%; right: -20%;
+    width: 60%; height: 80%;
+    background: radial-gradient(ellipse, oklch(65% 0.19 250 / 0.06) 0%, transparent 70%);
+    z-index: -1;
+  }
+
+  .page-2::after {
+    content: '';
+    position: absolute;
+    bottom: -20%; left: -15%;
+    width: 60%; height: 70%;
+    background: radial-gradient(ellipse, oklch(72% 0.19 155 / 0.05) 0%, transparent 70%);
+    z-index: -1;
+  }
+
+  .logo { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
+  .logo span { color: var(--accent); }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.4in;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .topbar-label {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-tertiary);
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 34px;
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+  }
+  h1 .accent { color: var(--profit); }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    max-width: 480px;
+    margin-bottom: 0.32in;
+    line-height: 1.65;
+  }
+
+  h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: 8px;
+  }
+
+  h3 { font-size: 13.5px; font-weight: 600; margin-bottom: 4px; }
+
+  .section-label {
+    font-size: 9.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  p.body, .body-text {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+
+  /* Concept callout */
+  .concept {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+  }
+
+  .concept h3 { color: var(--text-primary); margin-bottom: 5px; }
+  .concept p { font-size: 12px; color: var(--text-secondary); line-height: 1.6; margin: 0; }
+  .concept .highlight { color: var(--profit); font-weight: 600; }
+  .concept .accent-text { color: var(--accent); font-weight: 600; }
+
+  /* Example box */
+  .example-box {
+    background: var(--surface-1);
+    border-left: 3px solid var(--profit);
+    border-radius: 0 10px 10px 0;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+  }
+
+  .example-box .label {
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--profit);
+    margin-bottom: 6px;
+  }
+
+  .example-box p { font-size: 12px; color: var(--text-secondary); line-height: 1.6; margin: 0; }
+  .example-box .mono { font-family: 'Geist Mono', monospace; color: var(--text-primary); }
+
+  /* Strategy cards */
+  .strategy-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .strategy-card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+
+  .strategy-card h3 { font-size: 13px; margin-bottom: 6px; }
+  .strategy-card p { font-size: 11px; color: var(--text-secondary); line-height: 1.55; margin: 0; }
+  .strategy-card .edge { font-size: 10px; color: var(--profit); font-weight: 600; margin-top: 8px; display: block; }
+
+  /* Architecture diagram (text-based) */
+  .arch-flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 18px;
+    flex-wrap: nowrap;
+  }
+
+  .arch-node {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .arch-node .node-title {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+  }
+
+  .arch-node .node-desc {
+    font-size: 9px;
+    color: var(--text-tertiary);
+    line-height: 1.4;
+  }
+
+  .arch-arrow {
+    color: var(--accent);
+    font-size: 16px;
+    flex-shrink: 0;
+    padding: 0 4px;
+  }
+
+  /* Key decisions list */
+  .decisions {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .decisions li {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+
+  .decisions li h4 {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .decisions li p {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* Footer */
+  .page-footer {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    color: var(--text-tertiary);
+  }
+
+  .cta-box {
+    background: linear-gradient(135deg, oklch(12% 0.02 250), oklch(10% 0.015 250));
+    border: 1px solid oklch(72% 0.19 155 / 0.25);
+    border-radius: 10px;
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+    margin-bottom: 16px;
+  }
+
+  .cta-box h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+
+  .cta-box p { font-size: 11.5px; color: var(--text-secondary); }
+
+  .cta-pill {
+    display: inline-block;
+    background: var(--profit);
+    color: oklch(12% 0.01 155);
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 8px 18px;
+    border-radius: 8px;
+    white-space: nowrap;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 16px 0;
+  }
+
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     PAGE 1 — How Prediction Market Bots Work
+     ══════════════════════════════════════════ -->
+<div class="page page-1">
+  <div class="topbar">
+    <div class="logo">Cruise<span> Alpha</span></div>
+    <div class="topbar-label">Strategic Guide</div>
+  </div>
+
+  <h1>How Prediction Market<br/>Bots <span class="accent">Actually Work</span></h1>
+  <p class="subtitle">
+    Most people think trading bots are magic. They're not. They're loops that
+    read prices, compare them to a model, and place orders when the math is right.
+    This guide breaks down the mechanics.
+  </p>
+
+  <div class="section-label">The core idea</div>
+  <h2>Prices are probabilities</h2>
+  <p class="body">
+    On Polymarket, every market is a binary contract. A YES share priced at $0.42
+    means the market thinks there's a 42% chance the event happens. A NO share at
+    $0.58 is the other side of that bet. If you believe the true probability is 55%,
+    the YES share is underpriced by 13 cents. That's your edge.
+  </p>
+
+  <div class="example-box">
+    <div class="label">Example: Finding a mispricing</div>
+    <p>
+      Market: <span class="mono">"Fed cuts rates by July"</span> trading at <span class="mono">YES $0.42</span>.<br/>
+      Your model estimates 55% probability based on inflation data + Fed dot plots.<br/>
+      Expected value: <span class="mono">$0.55 - $0.42 = $0.13 edge per share</span>.<br/>
+      At 500 shares, that's $65 in expected profit on a single position.
+    </p>
+  </div>
+
+  <p class="body">
+    The catch: mispricings don't last. Other traders and bots are scanning the same
+    markets. A 13-cent gap might close in minutes. The entire point of a bot is
+    to detect and act on these faster than you can manually.
+  </p>
+
+  <hr class="divider" />
+
+  <div class="section-label">Three strategies that work</div>
+  <h2>Where the edge comes from</h2>
+
+  <div class="strategy-grid">
+    <div class="strategy-card">
+      <h3>Market Making</h3>
+      <p>
+        Place buy and sell orders on both sides of a market. You profit from
+        the spread between them. The key is managing inventory so you don't
+        get stuck holding a losing position when the market moves.
+      </p>
+      <span class="edge">Edge: spread capture, 1-4% per round trip</span>
+    </div>
+    <div class="strategy-card">
+      <h3>Arbitrage</h3>
+      <p>
+        Find the same event priced differently across correlated markets. If
+        "Party X wins" is $0.60 on one market but the implied opposite is $0.35,
+        that's a 5-cent risk-free gap. Buy the cheap side, short the expensive one.
+      </p>
+      <span class="edge">Edge: price discrepancy, near risk-free</span>
+    </div>
+    <div class="strategy-card">
+      <h3>Directional</h3>
+      <p>
+        Build a model that estimates true probabilities better than the market.
+        Use polling data, on-chain signals, or macro indicators. Buy when your
+        model says the market is too low, sell when it's too high.
+      </p>
+      <span class="edge">Edge: information advantage, variable</span>
+    </div>
+  </div>
+
+  <p class="body" style="margin-bottom: 0;">
+    Most successful bots combine elements of all three. Market making generates
+    steady small returns. Arbitrage captures risk-free opportunities when they
+    appear. Directional bets are where the large gains come from, but they require
+    a real information edge to sustain.
+  </p>
+
+  <div class="page-footer">
+    <span>cruisealpha.com</span>
+    <span>Page 1 of 2</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE 2 — Anatomy of a Bot
+     ══════════════════════════════════════════ -->
+<div class="page page-2">
+  <div class="topbar">
+    <div class="logo">Cruise<span> Alpha</span></div>
+    <div class="topbar-label">Bot Architecture</div>
+  </div>
+
+  <div class="section-label">Under the hood</div>
+  <h2>Anatomy of a prediction market bot</h2>
+  <p class="body">
+    Every trading bot, no matter how complex, follows the same five-stage pipeline.
+    Data comes in, gets analyzed, triggers decisions, executes trades, and feeds
+    results back into the system.
+  </p>
+
+  <div class="arch-flow">
+    <div class="arch-node">
+      <div class="node-title">Data Feed</div>
+      <div class="node-desc">Stream prices, volume, order book from API</div>
+    </div>
+    <div class="arch-arrow">&rarr;</div>
+    <div class="arch-node">
+      <div class="node-title">Scanner</div>
+      <div class="node-desc">Filter 800+ markets, score opportunities</div>
+    </div>
+    <div class="arch-arrow">&rarr;</div>
+    <div class="arch-node">
+      <div class="node-title">Strategy</div>
+      <div class="node-desc">Decide position size, direction, entry price</div>
+    </div>
+    <div class="arch-arrow">&rarr;</div>
+    <div class="arch-node">
+      <div class="node-title">Risk Check</div>
+      <div class="node-desc">Validate against limits before execution</div>
+    </div>
+    <div class="arch-arrow">&rarr;</div>
+    <div class="arch-node">
+      <div class="node-title">Executor</div>
+      <div class="node-desc">Place orders, monitor fills, log results</div>
+    </div>
+  </div>
+
+  <p class="body">
+    The data feed is a WebSocket connection that streams live prices. The scanner
+    runs your filters to surface only the markets worth looking at. The strategy
+    layer decides what to do. The risk check is your safety net, making sure no
+    single trade can blow up your portfolio. And the executor talks to the exchange.
+  </p>
+
+  <hr class="divider" />
+
+  <div class="section-label">The decisions that matter</div>
+  <h2>What separates a toy from a real system</h2>
+
+  <ul class="decisions">
+    <li>
+      <h4>Position sizing</h4>
+      <p>How much capital per trade? Kelly criterion is the gold standard: bet proportional to your edge divided by the odds. Most practitioners use half-Kelly to reduce variance.</p>
+    </li>
+    <li>
+      <h4>Max drawdown rules</h4>
+      <p>Set a hard limit on how much the portfolio can lose before the bot stops trading. 10-15% is typical. Without this, one bad streak wipes out months of gains.</p>
+    </li>
+    <li>
+      <h4>Execution speed vs. cost</h4>
+      <p>Limit orders save money but risk not getting filled. Market orders guarantee a fill but eat the spread. The right choice depends on how fast the opportunity is closing.</p>
+    </li>
+    <li>
+      <h4>Correlation management</h4>
+      <p>Betting on "Fed cuts rates" and "Recession by Q4" might feel like two trades. They're often the same bet in disguise. Your bot needs to track cross-market exposure.</p>
+    </li>
+  </ul>
+
+  <div class="concept">
+    <h3>The most common mistake</h3>
+    <p>
+      Building a bot that works in backtesting but fails live. The gap is almost always
+      <span class="highlight">execution assumptions</span>. In backtests, orders fill instantly at
+      the exact price you wanted. In production, there's slippage, latency, and other bots
+      competing for the same opportunity. Always backtest with realistic fill models,
+      then paper-trade before going live with real capital.
+    </p>
+  </div>
+
+  <div class="cta-box">
+    <div>
+      <h3>Want to build this yourself?</h3>
+      <p>Book a free 15-min call. We'll assess your background and map out where to start.</p>
+    </div>
+    <div class="cta-pill">cruisealpha.com</div>
+  </div>
+
+  <div class="page-footer">
+    <span>cruisealpha.com</span>
+    <span>Page 2 of 2</span>
+  </div>
+</div>
+
+</body>
+</html>
