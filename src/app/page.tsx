@@ -275,7 +275,7 @@ export default function Home() {
 
       <Sidebar />
 
-      <main className="flex-1 flex flex-col min-w-0 overflow-x-hidden relative z-10">
+      <main className="flex-1 flex flex-col min-w-0 relative z-10">
         <MarketTicker />
 
         <div className="p-4 md:p-8 lg:p-12 space-y-24 max-w-7xl mx-auto w-full box-border">
@@ -291,7 +291,7 @@ export default function Home() {
               <h1 className="text-5xl md:text-6xl font-bold tracking-tight leading-tight">
                 Stop buying bots.
                 <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-text-main to-text-muted">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F8FAFC] to-[#94A3B8]">
                   Engineer an edge.
                 </span>
               </h1>
@@ -380,8 +380,8 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Floating accuracy widget */}
-              <div className="absolute -bottom-6 -left-6 glass-panel p-4 rounded-lg flex items-center gap-4 text-sm font-mono border-l-2 border-l-neon shadow-xl w-64 hidden sm:flex">
+              {/* Accuracy widget — below terminal */}
+              <div className="mt-4 glass-panel p-4 rounded-lg flex items-center gap-4 text-sm font-mono border-l-2 border-l-neon shadow-xl w-64 hidden sm:flex">
                 <div className="w-10 h-10 rounded bg-neon/10 flex items-center justify-center text-neon text-xl">
                   <i className="ph-fill ph-chart-polar" />
                 </div>
