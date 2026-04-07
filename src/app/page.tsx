@@ -275,10 +275,10 @@ export default function Home() {
 
       <Sidebar />
 
-      <main className="flex-1 flex flex-col w-full relative z-10">
+      <main className="flex-1 flex flex-col min-w-0 overflow-x-hidden relative z-10">
         <MarketTicker />
 
-        <div className="p-4 md:p-8 lg:p-12 space-y-24 max-w-7xl mx-auto w-full">
+        <div className="p-4 md:p-8 lg:p-12 space-y-24 max-w-7xl mx-auto w-full box-border">
           {/* ══════════════ HERO ══════════════ */}
           <section id="hero" className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-8">
             {/* Text */}
@@ -320,7 +320,7 @@ export default function Home() {
             </div>
 
             {/* Terminal */}
-            <div className="lg:col-span-6 relative">
+            <div className="lg:col-span-6 relative min-w-0">
               <div className="glass-panel rounded-xl overflow-hidden shadow-2xl shadow-neon/5 border border-border/50">
                 {/* Terminal header */}
                 <div className="bg-surface border-b border-border px-4 py-2 flex items-center justify-between text-xs font-mono text-text-muted">
