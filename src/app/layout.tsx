@@ -1,23 +1,18 @@
 import type { Metadata } from "next";
-import { Instrument_Sans, Fraunces, Geist_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 
-const instrumentSans = Instrument_Sans({
-  variable: "--font-instrument",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "500", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -40,12 +35,16 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${instrumentSans.variable} ${fraunces.variable} ${geistMono.variable}`}
+      className={`${inter.variable} ${jetbrainsMono.variable} scroll-smooth`}
     >
       <body>
         {children}
         <Script
           src="https://assets.calendly.com/assets/external/widget.js"
+          strategy="afterInteractive"
+        />
+        <Script
+          src="https://unpkg.com/@phosphor-icons/web"
           strategy="afterInteractive"
         />
       </body>
